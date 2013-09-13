@@ -31,7 +31,7 @@
         </div>
         <div class="center" id="setDate" style="margin:10px" ng-show="radioModel == 'on'">
             <div class="form-horizontal">
-                <input type="text" style="width: 150px;" datepicker-popup="MMMM-dd-yyyy" ng-model="dt" is-open="opened" min="minDate" max="'2015-06-22'" datepicker-options="dateOptions" date-disabled="disabled(date, mode)" ng-required="true" />
+                <input type="text" style="width: 150px;" datepicker-popup="MMMM dd yyyy" ng-model="dt" is-open="opened" min="minDate" max="'2015-06-22'" datepicker-options="dateOptions" date-disabled="disabled(date, mode)" ng-required="true" />
                 at
                 <div ng-model="mytime" ng-change="changed()" style="display:inline-block;">
                     <input type="time" value="{{mytime}}" style="width:100px" />
@@ -50,7 +50,7 @@
         </div>
         <div class="center" id="saveCancel">
             <input class="btn-primary" type="submit" value="Save" ng-click="SaveAlert()">
-            <input class="btn-danger" type="submit" value="Cancel">
+            <input class="btn-danger" type="submit" value="Cancel" ng-click="CloseWindow()">
         </div>
         <div class="center" style="margin: 5px">
             <alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
