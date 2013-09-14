@@ -4,17 +4,16 @@ var DontForgetCtrl = function ($scope, $timeout)
 {
     //defaults
     $scope.ddInOn = ['in', 'on'];
-    $scope.ddRepeat = ['never','half hour', 'hour', 'day', 'week', 'year'];
+    $scope.ddRepeat = ['never', 'half hour', 'hour', 'day', 'week', 'year'];
     $scope.radioModel = 'in';
     $scope.showWeeks = false;
     var date = new Date();
     var hours = date.getHours();
 
-    var padTime = function(myNum){
-       return myNum < 10 ? "0" + myNum : myNum;
-    }
     $scope.mytime = padTime(hours) + ":" + padTime(date.getMinutes());
     $scope.alerts = [];
+    console.log('Loading alerts...');
+    loadAlerts();
 
     //datepicker
     $scope.today = function() {
@@ -22,9 +21,7 @@ var DontForgetCtrl = function ($scope, $timeout)
     };
     $scope.today();
     $scope.open = function() {
-        $timeout(function() {
-            $scope.opened = true;
-        });
+        $scope.opened = true;
     };
     $scope.dateOptions = {
         'year-format': "'yy'",
@@ -37,44 +34,102 @@ var DontForgetCtrl = function ($scope, $timeout)
     }
 
     $scope.SaveAlert = function(){
-        var message = $scope.reminderText;
+        var message = $scope.reminderText || '';
         var alertDateTime;
-        if($scope.radioModel == 'on')
-        {
-             var mydate = $scope.dt;
-             var mytime = $scope.mytime.split(':');
-             alertDateTime = new Date(mydate.getFullYear(), mydate.getMonth(), mydate.getDay(), mytime[0], mytime[1], 0, 0)
-        }else{
+        var repeat = $scope.selectedRepeat;
+        if($scope.radioModel == 'on') {
+            var mydate = $scope.dt;
+            var mytime = $scope.mytime.split(':');
+            alertDateTime = new Date(mydate.getFullYear(), mydate.getMonth(), mydate.getDay(), mytime[0], mytime[1], 0, 0)
+        } else {
             var mydate = $scope.dt;
             var mytime = $scope.mytime.split(':');
             alertDateTime = new Date(mydate.getFullYear(), mydate.getMonth(), mydate.getDay(), mytime[0], mytime[1], 0, 0)
         }
 
-        if(message == undefined)
+        if(repeat === 'Repeat Every' || repeat === 'never')
+            repeat = null;
+
+        if(message === '')
             message = "Don't Forget!";
 
         //success = green $scope.alerts.push({type: 'success', msg: new Date(alertDateTime - new Date()) + " " + message});
         //fail = red $scope.alerts.push({type: 'error', msg: new Date(alertDateTime - new Date()) + " " + message});
         //no type = yellow
-        $scope.alerts.push({msg: alertDateTime + " " + message});
-        chrome.browserAction.setIcon({path: 'DontForget.png'});
-        chrome.browserAction.setBadgeBackgroundColor({color:[255, 255, 255, 0]});
-        chrome.browserAction.setBadgeText({text: $scope.alerts.length.toString()});
+        //$scope.alerts.push({msg: alertDateTime + " " + message});
+
+        chrome.runtime.sendMessage({
+            action: 'addAlarm',
+            alarm: {
+                date: alertDateTime,
+                message: message,
+                repeat: repeat
+            }
+        }, function(response){
+            if (response.error) {
+                console.error('addAlarm failed: ' + response.error)
+            } else if (response.alarms) {
+                $scope.alerts = generateAlerts(response.alarms);
+                $scope.$digest();
+            }
+        });
 
         SetDefaults();
     }
+
     $scope.closeAlert = function(index) {
-        $scope.alerts.splice(index, 1);
-        chrome.browserAction.setBadgeText({text: $scope.alerts.length.toString()});
+        var id = $scope.alerts[index].id;
+
+        chrome.runtime.sendMessage({
+            action: 'deleteAlarm',
+            id: id
+        }, function(response){
+            if (response.error) {
+                console.error('deleteAlarm failed: ' + response.error)
+            } else if (response.alarms) {
+                $scope.alerts = generateAlerts(response.alarms);
+                $scope.$digest();
+            }
+        });
+
         SetDefaults();
     };
+
+    $scope.CloseWindow = function (){
+        window.close();
+    }
 
     function SetDefaults(){
         $scope.reminderText = '';
         $scope.selectedRepeat = 'Repeat Every';
     }
 
-    $scope.CloseWindow = function (){
-        window.close();
+    function padTime(myNum){
+       return myNum < 10 ? "0" + myNum : myNum;
+    }
+
+    function loadAlerts(){
+        chrome.runtime.sendMessage({
+            action: 'getAlarms'
+        }, function(response){
+            console.debug('received getAlarms message: ', response);
+
+            if (response.error) {
+                console.error('getAlarms failed: ' + response.error)
+            } else if (response.alarms) {
+                $scope.alerts = generateAlerts(response.alarms);
+                $scope.$digest();
+            }
+        })
+    }
+
+    function generateAlerts(alarms){
+        return alarms.map(function(value, index){
+            return {
+                id: value.id,
+                type: '',
+                msg: value.message + ' @ ' + value.date.toString()
+            };
+        });
     }
 };

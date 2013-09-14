@@ -2,9 +2,9 @@
   "name": "Don't Forget",
   "description": "Don't Forget adds reminders",
   "version": "0.1",
-  "permissions": ["notifications","storage"],
+  "permissions": ["notifications", "storage"],
   "background": {
-    "scripts": ["bg_omnibox.js"],
+    "scripts": ["bg_omnibox.js", "bg_alarms.js"],
     "persistent": false
   },
   "manifest_version": 2,
