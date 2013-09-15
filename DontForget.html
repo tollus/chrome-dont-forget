@@ -25,16 +25,16 @@
         </div>
 
         <div class="center" id="setMinutes" style="margin:10px" ng-show="radioModel == 'in'">
-            <input type="number"  min="0" max="72" value="0" style="width:35px" /> Hours
-            <input type="number"  min="0" max="59" value="15" style="width:35px" /> Minutes
+            <input type="number" ng-model="inHours" min="0" max="72" style="width:35px" /> Hours
+            <input type="number" ng-model="inMinutes" min="0" max="59" style="width:35px" /> Minutes
 
         </div>
         <div class="center" id="setDate" style="margin:10px" ng-show="radioModel == 'on'">
             <div class="form-horizontal">
                 <input type="text" style="width: 150px;" datepicker-popup="MMMM dd yyyy" ng-model="dt" is-open="opened" min="minDate" max="'2015-06-22'" datepicker-options="dateOptions" date-disabled="disabled(date, mode)" ng-required="true" />
                 at
-                <div ng-model="mytime" ng-change="changed()" style="display:inline-block;">
-                    <input type="time" value="{{mytime}}" style="width:100px" />
+                <div style="display:inline-block;">
+                    <input type="time" ng-model="mytime" style="width:100px" />
                 </div>
             </div>
         </div>

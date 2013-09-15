@@ -11,6 +11,8 @@ var DontForgetCtrl = function ($scope, $timeout)
     var hours = date.getHours();
 
     $scope.mytime = padTime(hours) + ":" + padTime(date.getMinutes());
+    SetDefaults();
+
     $scope.alerts = [];
     console.log('Loading alerts...');
     loadAlerts();
@@ -37,14 +39,17 @@ var DontForgetCtrl = function ($scope, $timeout)
         var message = $scope.reminderText || '';
         var alertDateTime;
         var repeat = $scope.selectedRepeat;
+
         if($scope.radioModel == 'on') {
             var mydate = $scope.dt;
             var mytime = $scope.mytime.split(':');
-            alertDateTime = new Date(mydate.getFullYear(), mydate.getMonth(), mydate.getDay(), mytime[0], mytime[1], 0, 0)
+            alertDateTime = Date.UTC(mydate.getFullYear(), mydate.getMonth(), mydate.getDate(), mytime[0], mytime[1], 0);
         } else {
-            var mydate = $scope.dt;
-            var mytime = $scope.mytime.split(':');
-            alertDateTime = new Date(mydate.getFullYear(), mydate.getMonth(), mydate.getDay(), mytime[0], mytime[1], 0, 0)
+            var mydate = new Date();
+            mydate.setHours(mydate.getHours() + $scope.inHours);
+            mydate.setMinutes(mydate.getMinutes() + $scope.inMinutes);
+
+            alertDateTime = Date.UTC(mydate.getFullYear(), mydate.getMonth(), mydate.getDate(), mydate.getHours(), mydate.getMinutes(), 0);
         }
 
         if(repeat === 'Repeat Every' || repeat === 'never')
@@ -100,6 +105,8 @@ var DontForgetCtrl = function ($scope, $timeout)
     }
 
     function SetDefaults(){
+        $scope.inHours = 0;
+        $scope.inMinutes = 15;
         $scope.reminderText = '';
         $scope.selectedRepeat = 'Repeat Every';
     }
@@ -125,10 +132,12 @@ var DontForgetCtrl = function ($scope, $timeout)
 
     function generateAlerts(alarms){
         return alarms.map(function(value, index){
+            var dt = new Date(value.date);
+
             return {
                 id: value.id,
                 type: '',
-                msg: value.message + ' @ ' + value.date.toString()
+                msg: value.message + ' @ ' + dt.toUTCString()
             };
         });
     }

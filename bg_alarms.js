@@ -75,7 +75,7 @@
                 /* expected:
 
                     alarm: {
-                        date: (Date) alertDateTime,
+                        date: (int) alertDateTime,
                         message: (string) message,
                         repeat: (Enum - 'half hour', 'hour', 'day', 'week', 'year') repeat
                     }
@@ -111,11 +111,9 @@
 
                 chrome.storage.local.get(function(settings) {
                     // find alarm by id
-                    var alarm;
                     var indexToDelete = -1;
                     settings.alarms.every(function(value, index) {
                         if (value.id === message.id) {
-                            alarm = value;
                             indexToDelete = index;
                             return false;
                         }
@@ -123,12 +121,18 @@
                     });
 
                     if (indexToDelete > -1) {
-                        settings.alarms.splice(indexToDelete, 1);
+                        var alarm = settings.alarms.splice(indexToDelete, 1);
 
                         chrome.storage.local.set(settings, function() {
-                            chrome.browserAction.setBadgeText({text: settings.alarms.length.toString()});
+                            if (settings.alarms.length === 0) {
+                                chrome.browserAction.setBadgeText({text: ''});
+                                chrome.browserAction.setIcon({path: 'DontForgetBW.png'});
+                            } else {
+                                chrome.browserAction.setBadgeText({text: settings.alarms.length.toString()});
+                            }
                             callback({
                                 result: true,
+                                deleted: alarm,
                                 alarms: settings.alarms
                             });
                         });
