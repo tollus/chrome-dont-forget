@@ -27,7 +27,7 @@
                 chrome.browserAction.setBadgeBackgroundColor({color:[255, 255, 255, 0]});
                 chrome.browserAction.setBadgeText({text: settings.alarms.length.toString()});
 
-                chrome.alarms.create("alerts", {periodInMinutes:.25});
+                chrome.alarms.create("alerts", {delayInMinutes: .1, periodInMinutes: .25});
 
                 // make sure the alarms have id values
                 var changed = false;
@@ -196,8 +196,9 @@
                type: "list",
                title: "Don't Forget!",
                message: "my message",
-               iconUrl: "DontForget.png",
-               items: alertItems
+               iconUrl: "DontForget64.png",
+               items: alertItems,
+               buttons: [{iconUrl: 'snooze.png', title: "Snooze"}, {iconUrl: 'dismiss.png', title: "Dismiss"}]
            }
 
            if(alertItems.length > 0){
