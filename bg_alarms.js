@@ -10,6 +10,111 @@
     chrome.notifications.onClosed.addListener(notificationClosed);
     chrome.notifications.onButtonClicked.addListener(buttonClicked);
 
+    // shared functions for runtime.sendMessage
+    var msgFunctions = {
+        'addAlarm': function(message, callback) {
+            if (!message.alarm) {
+                console.error('Missing alarm parameter in addAlarm call.');
+                callback({error: 'Missing alarm parameter.'});
+                return;
+            }
+
+            //TODO: Validate the alarm object?
+            /* expected:
+
+                alarm: {
+                    date: (int) alertDateTime,
+                    message: (string) message,
+                    repeat: (Enum - 'half hour', 'hour', 'day', 'week', 'year') repeat
+                }
+
+                */
+
+            chrome.storage.local.get(function(settings) {
+                //TODO: check runtime.error
+
+                message.alarm.id = settings.uuid++;
+                settings.alarms.push(message.alarm);
+
+                chrome.storage.local.set(settings, function() {
+                    //TODO: check runtime.error
+
+                    // wait to respond and update icon when set finishes
+                    alarmsCreated(settings.alarms);
+
+                    callback({alarms: settings.alarms});
+                });
+            });
+            // return true to process callback async
+            return true;
+        },
+
+        'deleteAlarm': function(message, callback) {
+            if (message.id === undefined) {
+                console.error('Missing id parameter in deleteAlarm call.');
+                callback({error: 'Missing id parameter.'});
+                return;
+            }
+            if(!message.id.length)
+            {
+                message.id = [message.id];
+            }
+
+            chrome.storage.local.get(function(settings) {
+                // find alarm by id
+                var isFound;
+                message.id.forEach(function(id){
+                    var indexToDelete = -1;
+                    settings.alarms.every(function(value, index) {
+                        if (value.id === id) {
+                            indexToDelete = index;
+                            return false;
+                        }
+                        return true;
+                    });
+
+                    if (indexToDelete > -1) {
+                        var alarm = settings.alarms.splice(indexToDelete, 1);
+                        isFound = true;
+                    }
+                });
+
+                if(isFound)
+                {
+                    chrome.storage.local.set(settings, function() {
+                        if (settings.alarms.length === 0) {
+                            alarmsRemoved();
+                        } else {
+                            alarmsCreated(settings.alarms);
+                        }
+                        callback({
+                            result: true,
+                            alarms: settings.alarms
+                        });
+                    });
+
+                }else{
+                    callback({
+                        result: false,
+                        alarms: settings.alarms
+                    });
+                }
+            });
+
+            // return true to process callback async
+            return true;
+        },
+        'getAlarms': function(message, callback) {
+            chrome.storage.local.get(function(settings) {
+                //TODO: check runtime.error
+                callback({alarms: settings.alarms || []});
+            });
+
+            // return true to process callback async
+            return true;
+        }
+    };
+
     function init() {
         console.debug('init called');
 
@@ -92,112 +197,12 @@
             return;
         }
 
-        switch(message.action) {
-            case 'addAlarm':
-                if (!message.alarm) {
-                    console.error('Missing alarm parameter in addAlarm call.');
-                    callback({error: 'Missing alarm parameter.'});
-                    return;
-                }
-
-                //TODO: Validate the alarm object?
-                /* expected:
-
-                    alarm: {
-                        date: (int) alertDateTime,
-                        message: (string) message,
-                        repeat: (Enum - 'half hour', 'hour', 'day', 'week', 'year') repeat
-                    }
-
-                    */
-
-                chrome.storage.local.get(function(settings) {
-                    //TODO: check runtime.error
-
-                    message.alarm.id = settings.uuid++;
-                    settings.alarms.push(message.alarm);
-
-                    chrome.storage.local.set(settings, function() {
-                        //TODO: check runtime.error
-
-                        // wait to respond and update icon when set finishes
-                        alarmsCreated(settings.alarms);
-
-                        callback({alarms: settings.alarms});
-                    });
-                });
-                // return true to process callback async
-                return true;
-
-            case 'deleteAlarm':
-                if (message.id === undefined) {
-                    console.error('Missing id parameter in deleteAlarm call.');
-                    callback({error: 'Missing id parameter.'});
-                    return;
-                }
-                if(!message.id.length)
-                {
-                    message.id = [message.id];
-                }
-
-                chrome.storage.local.get(function(settings) {
-                    // find alarm by id
-                    var isFound;
-                    message.id.forEach(function(id){
-                        var indexToDelete = -1;
-                        settings.alarms.every(function(value, index) {
-                            if (value.id === id) {
-                                indexToDelete = index;
-                                return false;
-                            }
-                            return true;
-                        });
-
-                        if (indexToDelete > -1) {
-                            var alarm = settings.alarms.splice(indexToDelete, 1);
-                            isFound = true;
-                        }
-                    });
-
-                    if(isFound)
-                    {
-                        chrome.storage.local.set(settings, function() {
-                            if (settings.alarms.length === 0) {
-                                alarmsRemoved();
-                            } else {
-                                alarmsCreated(settings.alarms);
-                            }
-                            callback({
-                                result: true,
-                                alarms: settings.alarms
-                            });
-                        });
-
-                    }else{
-                        callback({
-                            result: false,
-                            alarms: settings.alarms
-                        });
-                    }
-                });
-
-                // return true to process callback async
-                return true;
-
-            case 'getAlarms':
-                chrome.storage.local.get(function(settings) {
-                    //TODO: check runtime.error
-                    callback({alarms: settings.alarms || []});
-                });
-
-                // return true to process callback async
-                return true;
-
-            default:
-                callback({error: 'Action ' + message.action + ' not implemented.'});
-                break;
-
+        var fn = msgFunctions[message.action];
+        if (fn) {
+            return fn.call(this, message, callback);
         }
+
+        callback({error: 'Action ' + message.action + ' not implemented.'});
     }
 
     function alarmFired() {
@@ -212,7 +217,6 @@
                                 now.getHours(), now.getMinutes());
 
         chrome.storage.local.get(function(settings) {
-            console.log(settings.alarms);
             var firedAlertIDs = [];
 
             settings.alarms.forEach(function(value, index) {
@@ -250,11 +254,10 @@
         if(buttonIndex == 0){
             console.log("snooze pressed");
             snoozeAlert(notificationID);
-        }else{
+        } else {
             console.log("dismiss pressed");
             chrome.storage.local.get('firedAlertIDs', function(settings){
-                chrome.runtime.sendMessage({
-                    action: 'deleteAlarm',
+                msgFunctions['deleteAlarm'].call(this, {
                     id: settings.firedAlertIDs
                 }, function(response){
                     if (response.error) {
