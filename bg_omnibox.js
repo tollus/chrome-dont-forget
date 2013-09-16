@@ -22,7 +22,7 @@ function omnibox_inputEntered(text, disposition) {
 
 function setDefaultSuggestion() {
   chrome.omnibox.setDefaultSuggestion({
-    description: '(examples: eat lunch at 12:30 pm|take a break in 10 minutes)'
+    description: '<dim>(examples:</dim> eat lunch at 12:30 pm<dim>|</dim>take a break in 10 minutes<dim>)</dim>'
   });
 }
 
