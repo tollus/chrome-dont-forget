@@ -1,10 +1,13 @@
-;(function(undefined) {"use strict";
+;(function(undefined) {
+    "use strict";
+
+    var autoClosingNotification;
 
     chrome.runtime.onStartup.addListener(init);
     chrome.runtime.onInstalled.addListener(init);
     chrome.runtime.onMessage.addListener(messageReceived);
-    chrome.alarms.onAlarm.addListener(alarmFired)
-    chrome.notifications.onClosed.addListener(isclosed)
+    chrome.alarms.onAlarm.addListener(alarmFired);
+    chrome.notifications.onClosed.addListener(notificationClosed);
 
     function init() {
         console.debug('init called');
@@ -13,21 +16,18 @@
         chrome.storage.local.get(function(settings) {
             //TODO: check runtime.error
             var updateSettings = false;
+            console.debug('settings: ', settings);
 
             // default alarms to array if not defined
             settings.alarms = settings.alarms || [];
 
-            if (!settings.uuid) {
+            if (!settings.uuid && settings.uuid !== 0) {
                 settings.uuid = 0;
                 updateSettings = true;
             }
 
             if (settings.alarms.length > 0) {
-                chrome.browserAction.setIcon({path: 'DontForget.png'});
-                chrome.browserAction.setBadgeBackgroundColor({color:[255, 255, 255, 0]});
-                chrome.browserAction.setBadgeText({text: settings.alarms.length.toString()});
-
-                chrome.alarms.create("alerts", {delayInMinutes: .1, periodInMinutes: .25});
+                alarmsCreated(settings.alarms);
 
                 // make sure the alarms have id values
                 var changed = false;
@@ -42,6 +42,8 @@
                     settings.alarms = alarms;
                     updateSettings = true;
                 }
+            } else {
+                alarmsRemoved();
             }
 
             if (updateSettings) {
@@ -51,6 +53,28 @@
                 });
             }
         });
+    }
+
+    // when there are alarms, add the timeout and update the icon
+    function alarmsCreated(alarms) {
+        if (alarms.length === 0) {
+            alarmsRemoved();
+            return;
+        }
+
+        chrome.browserAction.setIcon({path: 'DontForget.png'});
+        chrome.browserAction.setBadgeBackgroundColor({color:[255, 255, 255, 0]});
+        chrome.browserAction.setBadgeText({text: alarms.length.toString()});
+
+        chrome.alarms.create("alerts", {delayInMinutes: .1, periodInMinutes: .25});
+    }
+
+    // when there are no alarms left, remove the timeout
+    function alarmsRemoved() {
+        chrome.browserAction.setBadgeText({text: ''});
+        chrome.browserAction.setIcon({path: 'DontForgetBW.png'});
+
+        chrome.alarms.clearAll();
     }
 
     function messageReceived(message, sender, callback) {
@@ -96,9 +120,7 @@
                         //TODO: check runtime.error
 
                         // wait to respond and update icon when set finishes
-                        chrome.browserAction.setIcon({path: 'DontForget.png'});
-                        chrome.browserAction.setBadgeBackgroundColor({color:[255, 255, 255, 0]});
-                        chrome.browserAction.setBadgeText({text: settings.alarms.length.toString()});
+                        alarmsCreated(settings.alarms);
 
                         callback({alarms: settings.alarms});
                     });
@@ -129,10 +151,9 @@
 
                         chrome.storage.local.set(settings, function() {
                             if (settings.alarms.length === 0) {
-                                chrome.browserAction.setBadgeText({text: ''});
-                                chrome.browserAction.setIcon({path: 'DontForgetBW.png'});
+                                alarmsRemoved();
                             } else {
-                                chrome.browserAction.setBadgeText({text: settings.alarms.length.toString()});
+                                alarmsCreated(settings.alarms);
                             }
                             callback({
                                 result: true,
@@ -168,47 +189,51 @@
         }
     }
 
-    function alarmFired(){
+    function alarmFired() {
         console.debug("alarm fired");
         notify();
     }
 
     function notify() {
-       var alertItems = [];
-       var now = new Date(Date.now());
-       var currentDT = Date.UTC(now.getFullYear(),now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
-       var lastAlarmID = 0;
+        var alertItems = [];
+        var now = new Date(Date.now());
+        var currentDT = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(),
+                                now.getHours(), now.getMinutes());
 
-       chrome.storage.local.get(function(settings) {
-           console.log(settings.alarms);
+        chrome.storage.local.get(function(settings) {
+            console.log(settings.alarms);
 
-           settings.alarms.forEach(function(value, index){
-               console.log(value.date + "|" + currentDT);
-               if(value.date < currentDT){
-                   alertItems.push({ title: '', message: value.message});
-                   lastAlarmID = value.id;
-               }
+            settings.alarms.forEach(function(value, index) {
+                if (value.date <= currentDT) {
+                    alertItems.push({ title: '', message: value.message});
+                }
+            });
 
-           });
-           console.debug(alertItems);
+            if (alertItems.length > 0) {
+                console.debug(alertItems);
+                var opts = {
+                    type: "list",
+                    title: "Don't Forget!",
+                    message: "my message",
+                    iconUrl: "DontForget64.png",
+                    items: alertItems,
+                    buttons: [{iconUrl: 'snooze.png', title: "Snooze"}, {iconUrl: 'dismiss.png', title: "Dismiss"}]
+                };
 
-           var opts = {
-               type: "list",
-               title: "Don't Forget!",
-               message: "my message",
-               iconUrl: "DontForget64.png",
-               items: alertItems,
-               buttons: [{iconUrl: 'snooze.png', title: "Snooze"}, {iconUrl: 'dismiss.png', title: "Dismiss"}]
-           }
-
-           if(alertItems.length > 0){
-               chrome.notifications.clear("alerts", function(){});
-               chrome.notifications.create("alerts", opts, function(){});
-           }
-
-       });
+                autoClosingNotification = true;
+                chrome.notifications.clear("alerts", function() {
+                    autoClosingNotification = false;
+                });
+                chrome.notifications.create("alerts", opts, function(){});
+            }
+        });
     }
-    function isclosed(){
-        console.log("i closed");
+
+
+    function notificationClosed() {
+        // ignore auto closes
+        if (autoClosingNotification) return;
+
+        console.debug("notification closed");
     }
-}())
+}());
