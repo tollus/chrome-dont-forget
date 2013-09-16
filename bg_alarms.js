@@ -8,6 +8,7 @@
     chrome.runtime.onMessage.addListener(messageReceived);
     chrome.alarms.onAlarm.addListener(alarmFired);
     chrome.notifications.onClosed.addListener(notificationClosed);
+    chrome.notifications.onButtonClicked.addListener(buttonClicked);
 
     function init() {
         console.debug('init called');
@@ -134,21 +135,32 @@
                     callback({error: 'Missing id parameter.'});
                     return;
                 }
+                if(!message.id.length)
+                {
+                    message.id = [message.id];
+                }
 
                 chrome.storage.local.get(function(settings) {
                     // find alarm by id
-                    var indexToDelete = -1;
-                    settings.alarms.every(function(value, index) {
-                        if (value.id === message.id) {
-                            indexToDelete = index;
-                            return false;
+                    var isFound;
+                    message.id.forEach(function(id){
+                        var indexToDelete = -1;
+                        settings.alarms.every(function(value, index) {
+                            if (value.id === id) {
+                                indexToDelete = index;
+                                return false;
+                            }
+                            return true;
+                        });
+
+                        if (indexToDelete > -1) {
+                            var alarm = settings.alarms.splice(indexToDelete, 1);
+                            isFound = true;
                         }
-                        return true;
                     });
 
-                    if (indexToDelete > -1) {
-                        var alarm = settings.alarms.splice(indexToDelete, 1);
-
+                    if(isFound)
+                    {
                         chrome.storage.local.set(settings, function() {
                             if (settings.alarms.length === 0) {
                                 alarmsRemoved();
@@ -157,12 +169,11 @@
                             }
                             callback({
                                 result: true,
-                                deleted: alarm,
                                 alarms: settings.alarms
                             });
                         });
-                    } else {
-                        // could not find alarm by that id
+
+                    }else{
                         callback({
                             result: false,
                             alarms: settings.alarms
@@ -202,33 +213,72 @@
 
         chrome.storage.local.get(function(settings) {
             console.log(settings.alarms);
+            var firedAlertIDs = [];
 
             settings.alarms.forEach(function(value, index) {
                 if (value.date <= currentDT) {
                     alertItems.push({ title: '', message: value.message});
+                    firedAlertIDs.push(value.id);
                 }
             });
 
-            if (alertItems.length > 0) {
-                console.debug(alertItems);
-                var opts = {
-                    type: "list",
-                    title: "Don't Forget!",
-                    message: "my message",
-                    iconUrl: "DontForget64.png",
-                    items: alertItems,
-                    buttons: [{iconUrl: 'snooze.png', title: "Snooze"}, {iconUrl: 'dismiss.png', title: "Dismiss"}]
-                };
+            chrome.storage.local.set({firedAlertIDs: firedAlertIDs}, function(){
+                //TODO: check runtime.err
 
-                autoClosingNotification = true;
-                chrome.notifications.clear("alerts", function() {
-                    autoClosingNotification = false;
-                });
-                chrome.notifications.create("alerts", opts, function(){});
-            }
+                if (alertItems.length > 0) {
+                    console.debug(alertItems);
+                    var opts = {
+                        type: "list",
+                        title: "Don't Forget!",
+                        message: "my message",
+                        iconUrl: "DontForget64.png",
+                        items: alertItems,
+                        buttons: [{iconUrl: 'snooze.png', title: "Snooze"}, {iconUrl: 'dismiss.png', title: "Dismiss"}]
+                    };
+
+                    autoClosingNotification = true;
+                    chrome.notifications.clear("alerts", function() {
+                        autoClosingNotification = false;
+                        chrome.notifications.create("alerts", opts, function(){});
+                    });
+                }
+            });
         });
     }
 
+    function buttonClicked(notificationID, buttonIndex){
+        if(buttonIndex == 0){
+            console.log("snooze pressed");
+            snoozeAlert(notificationID);
+        }else{
+            console.log("dismiss pressed");
+            chrome.storage.local.get('firedAlertIDs', function(settings){
+                chrome.runtime.sendMessage({
+                    action: 'deleteAlarm',
+                    id: settings.firedAlertIDs
+                }, function(response){
+                    if (response.error) {
+                        console.error('deleteAlarm failed: ' + response.error)
+                    }
+                });
+            });
+        }
+    }
+
+    function snoozeAlert()   {
+        chrome.storage.local.get(function(settings) {
+            settings.alarms = settings.alarms.map(function(value,index){
+                if(settings.firedAlertIDs.indexOf(value.id) > -1)
+                {
+                    value.date = value.date + 600000;
+                }
+                return value;
+            });
+            chrome.storage.local.set(settings, function() {
+
+            });
+        });
+    }
 
     function notificationClosed() {
         // ignore auto closes
