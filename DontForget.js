@@ -8,6 +8,9 @@ var DontForgetCtrl = function ($scope, $timeout)
     $scope.radioModel = 'in';
     $scope.showWeeks = false;
     var date = new Date();
+    // round to next 15 minutes
+    date.setMinutes(date.getMinutes() + 15 + (15 - (date.getMinutes() % 15)));
+
     var hours = date.getHours();
 
     $scope.mytime = padTime(hours) + ":" + padTime(date.getMinutes());
