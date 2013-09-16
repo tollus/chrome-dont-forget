@@ -3,6 +3,8 @@
     chrome.runtime.onStartup.addListener(init);
     chrome.runtime.onInstalled.addListener(init);
     chrome.runtime.onMessage.addListener(messageReceived);
+    chrome.alarms.onAlarm.addListener(alarmFired)
+    chrome.notifications.onClosed.addListener(isclosed)
 
     function init() {
         console.debug('init called');
@@ -24,6 +26,8 @@
                 chrome.browserAction.setIcon({path: 'DontForget.png'});
                 chrome.browserAction.setBadgeBackgroundColor({color:[255, 255, 255, 0]});
                 chrome.browserAction.setBadgeText({text: settings.alarms.length.toString()});
+
+                chrome.alarms.create("alerts", {periodInMinutes:.25});
 
                 // make sure the alarms have id values
                 var changed = false;
@@ -164,4 +168,46 @@
         }
     }
 
+    function alarmFired(){
+        console.debug("alarm fired");
+        notify();
+    }
+
+    function notify() {
+       var alertItems = [];
+       var now = new Date(Date.now());
+       var currentDT = Date.UTC(now.getFullYear(),now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+       var lastAlarmID = 0;
+
+       chrome.storage.local.get(function(settings) {
+           console.log(settings.alarms);
+
+           settings.alarms.forEach(function(value, index){
+               console.log(value.date + "|" + currentDT);
+               if(value.date < currentDT){
+                   alertItems.push({ title: '', message: value.message});
+                   lastAlarmID = value.id;
+               }
+
+           });
+           console.debug(alertItems);
+
+           var opts = {
+               type: "list",
+               title: "Don't Forget!",
+               message: "my message",
+               iconUrl: "DontForget.png",
+               items: alertItems
+           }
+
+           if(alertItems.length > 0){
+               chrome.notifications.clear("alerts", function(){});
+               chrome.notifications.create("alerts", opts, function(){});
+           }
+
+       });
+    }
+    function isclosed(){
+        console.log("i closed");
+    }
 }())
