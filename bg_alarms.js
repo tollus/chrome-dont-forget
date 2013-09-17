@@ -286,7 +286,10 @@
         chrome.storage.local.get(function(settings) {
             settings.alarms = settings.alarms.map(function(value,index) {
                 if (settings.firedAlertIDs.indexOf(value.id) > -1) {
-                    value.date = value.date + 1000 * 60 * 10; // 10 min
+                    var now = new Date();
+                    var currentDate = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), 0);
+
+                    value.date = currentDate + 1000 * 60 * 10; // 10 min
                 }
                 return value;
             });
