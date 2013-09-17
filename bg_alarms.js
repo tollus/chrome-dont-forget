@@ -52,7 +52,6 @@
             // return true to process callback async
             return true;
         },
-
         'deleteAlarm': function(message, callback) {
             if (message.id === undefined) {
                 console.error('Missing id parameter in deleteAlarm call.');
