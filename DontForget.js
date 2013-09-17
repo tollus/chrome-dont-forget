@@ -60,7 +60,7 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
             mydate.setHours(mydate.getHours() + $scope.inHours);
             mydate.setMinutes(mydate.getMinutes() + $scope.inMinutes);
 
-            alertDateTime = Date.UTC(mydate.getFullYear(), mydate.getMonth(), mydate.getDate(), mydate.getHours(), mydate.getMinutes(), mydate.getSeconds());
+            alertDateTime = Date.UTC(mydate.getFullYear(), mydate.getMonth(), mydate.getDate(), mydate.getHours(), mydate.getMinutes(), 0);
         }
 
         if(repeat === 'Repeat Every' || repeat === 'never')
