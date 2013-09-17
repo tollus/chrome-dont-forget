@@ -42,7 +42,7 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
     };
 
     $scope.selectedRepeat = "Repeat Every"
-    $scope.onRepeatClicked = function(event){
+    $scope.onRepeatClicked = function(event) {
         $scope.selectedRepeat = event;
     }
 
@@ -138,14 +138,14 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
                 $scope.alerts = generateAlerts(response.alarms).slice(0,5);
                 $scope.$digest();
             }
-        })
+        });
     }
 
     function generateAlerts(alarms){
         return alarms.map(function(value, index){
-            var dateString;
-            var dt = new Date(value.date);
-            var adjustedDT = new Date(value.date + (dt.getTimezoneOffset() * 60000));
+            var adjustedDT = new Date(value.date);
+            // force to local timezone
+            adjustedDT.setMinutes(adjustedDT.getMinutes() + adjustedDT.getTimezoneOffset());
 
              return {
                 id: value.id,
@@ -156,20 +156,21 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
     }
 
     function friendlyDTFormat(adjustedDT){
+        var now = new Date();
         var dateString = '';
 
-        if(adjustedDT.getDate() == new Date(Date.now()).getDate())
-        {
+        if (adjustedDT.getDate() == now.getDate()) {
             dateString = "'Today at' h:mm a";
-        }else if(adjustedDT.getDate() == new Date(Date.now()).getDate()+1){
+        } else if (adjustedDT.getDate() == now.getDate()+1) {
             dateString = "'Tomorrow at' h:mm a";
-        }else if(adjustedDT.getDate() == new Date(Date.now()).getDate()-1){
+        } else if (adjustedDT.getDate() == now.getDate()-1) {
             dateString = "'Yesterday at' h:mm a";
-        }else{
+        } else {
             dateString = 'MMM d, y h:mm a';
         }
         return dateString;
     }
+
     // called from the background page
     window.refreshAlarms = loadAlerts;
 };

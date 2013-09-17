@@ -286,10 +286,9 @@
         chrome.storage.local.get(function(settings) {
             settings.alarms = settings.alarms.map(function(value,index) {
                 if (settings.firedAlertIDs.indexOf(value.id) > -1) {
-                    var now = new Date();
-                    var currentDate = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), 0);
+                    var now = getCurrentDate();
 
-                    value.date = currentDate + 1000 * 60 * 10; // 10 min
+                    value.date = now + 1000 * 60 * 10; // 10 min
                 }
                 return value;
             });
@@ -298,6 +297,12 @@
                 refreshPopup();
             });
         });
+    }
+
+    // returns the current date as number (local timezone stored as UTC with 0 seconds)
+    function getCurrentDate() {
+        var now = new Date();
+        return Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), 0);
     }
 
     function notificationClosed() {
