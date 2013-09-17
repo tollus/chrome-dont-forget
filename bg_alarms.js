@@ -57,15 +57,14 @@
                 callback({error: 'Missing id parameter.'});
                 return;
             }
-            if(!message.id.length)
-            {
+            if (!message.id.length) {
                 message.id = [message.id];
             }
 
             chrome.storage.local.get(function(settings) {
                 // find alarm by id
                 var isFound;
-                message.id.forEach(function(id){
+                message.id.forEach(function(id) {
                     var indexToDelete = -1;
                     settings.alarms.every(function(value, index) {
                         if (value.id === id) {
@@ -81,8 +80,7 @@
                     }
                 });
 
-                if(isFound)
-                {
+                if (isFound) {
                     chrome.storage.local.set(settings, function() {
                         if (settings.alarms.length === 0) {
                             alarmsRemoved();
@@ -98,7 +96,7 @@
                         refreshPopup();
                     });
 
-                }else{
+                } else {
                     callback({
                         result: false,
                         alarms: settings.alarms
@@ -240,7 +238,7 @@
                 }
             });
 
-            chrome.storage.local.set({firedAlertIDs: firedAlertIDs}, function(){
+            chrome.storage.local.set({firedAlertIDs: firedAlertIDs}, function() {
                 //TODO: check runtime.err
 
                 if (alertItems.length > 0) {
@@ -264,16 +262,16 @@
         });
     }
 
-    function buttonClicked(notificationID, buttonIndex){
-        if(buttonIndex == 0){
+    function buttonClicked(notificationID, buttonIndex) {
+        if (buttonIndex == 0) {
             console.log("snooze pressed");
             snoozeAlert(notificationID);
         } else {
             console.log("dismiss pressed");
-            chrome.storage.local.get('firedAlertIDs', function(settings){
+            chrome.storage.local.get('firedAlertIDs', function(settings) {
                 msgFunctions['deleteAlarm'].call(this, {
                     id: settings.firedAlertIDs
-                }, function(response){
+                }, function(response) {
                     if (response.error) {
                         console.error('deleteAlarm failed: ' + response.error)
                     }
@@ -284,10 +282,9 @@
 
     function snoozeAlert()   {
         chrome.storage.local.get(function(settings) {
-            settings.alarms = settings.alarms.map(function(value,index){
-                if(settings.firedAlertIDs.indexOf(value.id) > -1)
-                {
-                    value.date = value.date + 600000;
+            settings.alarms = settings.alarms.map(function(value,index) {
+                if (settings.firedAlertIDs.indexOf(value.id) > -1) {
+                    value.date = value.date + 1000 * 60 * 10; // 10 min
                 }
                 return value;
             });
