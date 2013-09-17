@@ -150,6 +150,7 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
              return {
                 id: value.id,
                 type: '',
+                repeat: value.repeat ? "repeat" : '',
                 msg: value.message + ' @ ' + $filter('date')(adjustedDT, friendlyDTFormat(adjustedDT))
             };
         });

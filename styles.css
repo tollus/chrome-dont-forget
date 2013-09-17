@@ -24,3 +24,12 @@ body{
     -moz-border-radius: 4px;
     border-radius: 4px;
 }
+
+.repeat{
+    background-image: url(images/Loop.png);
+    width: 16px;
+    height: 16px;
+    margin-right: 3px;
+    display: inline-block;
+    vertical-align: middle;
+}

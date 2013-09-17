@@ -54,7 +54,7 @@
             <input class="btn-danger" type="submit" value="Cancel" ng-click="CloseWindow()">
         </div>
         <div class="center" style="margin: 5px 0px 0px 0px">
-            <alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
+            <alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)"><span class="{{alert.repeat}}">&nbsp;</span>{{alert.msg}}</alert>
         </div>
     </div>
     <div style="clear:both"></div>
