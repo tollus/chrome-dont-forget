@@ -144,4 +144,7 @@ var DontForgetCtrl = function ($scope, $timeout)
             };
         });
     }
+
+    // called from the background page
+    window.refreshAlarms = loadAlerts;
 };

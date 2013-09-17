@@ -43,6 +43,8 @@
                     alarmsCreated(settings.alarms);
 
                     callback({alarms: settings.alarms});
+                    // tell popup to refresh if it's open
+                    refreshPopup();
                 });
             });
             // return true to process callback async
@@ -91,6 +93,9 @@
                             result: true,
                             alarms: settings.alarms
                         });
+
+                        // tell popup to refresh if it's open
+                        refreshPopup();
                     });
 
                 }else{
@@ -159,6 +164,15 @@
                 });
             }
         });
+    }
+
+    // tell popup to refresh if it's open
+    function refreshPopup() {
+        var pop = chrome.extension.getViews({type:'popup'});
+        if (pop.length === 1) {
+            pop = pop[0];
+            pop.refreshAlarms();
+        }
     }
 
     // when there are alarms, add the timeout and update the icon
@@ -278,7 +292,8 @@
                 return value;
             });
             chrome.storage.local.set(settings, function() {
-
+                // tell popup to refresh if it's open
+                refreshPopup();
             });
         });
     }
