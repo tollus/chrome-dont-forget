@@ -46,13 +46,13 @@ var DontForgetCtrl = function ($scope, $timeout)
         if($scope.radioModel == 'on') {
             var mydate = $scope.dt;
             var mytime = $scope.mytime.split(':');
-            alertDateTime = Date.UTC(mydate.getFullYear(), mydate.getMonth(), mydate.getDate(), mytime[0], mytime[1], 0);
+            alertDateTime = Date.UTC(mydate.getFullYear(), mydate.getMonth(), mydate.getDate(), mytime[0], mytime[1], mytime[2]);
         } else {
             var mydate = new Date();
             mydate.setHours(mydate.getHours() + $scope.inHours);
             mydate.setMinutes(mydate.getMinutes() + $scope.inMinutes);
 
-            alertDateTime = Date.UTC(mydate.getFullYear(), mydate.getMonth(), mydate.getDate(), mydate.getHours(), mydate.getMinutes(), 0);
+            alertDateTime = Date.UTC(mydate.getFullYear(), mydate.getMonth(), mydate.getDate(), mydate.getHours(), mydate.getMinutes(), mydate.getSeconds());
         }
 
         if(repeat === 'Repeat Every' || repeat === 'never')
@@ -127,7 +127,7 @@ var DontForgetCtrl = function ($scope, $timeout)
             if (response.error) {
                 console.error('getAlarms failed: ' + response.error)
             } else if (response.alarms) {
-                $scope.alerts = generateAlerts(response.alarms);
+                $scope.alerts = generateAlerts(response.alarms).slice(0,5);
                 $scope.$digest();
             }
         })
@@ -145,6 +145,9 @@ var DontForgetCtrl = function ($scope, $timeout)
         });
     }
 
+    function formatDateTime(dt){
+        return dt.month
+    }
     // called from the background page
     window.refreshAlarms = loadAlerts;
 };

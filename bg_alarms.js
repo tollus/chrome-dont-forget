@@ -36,6 +36,8 @@
                 message.alarm.id = settings.uuid++;
                 settings.alarms.push(message.alarm);
 
+                settings.alarms.sort(function(a,b){return a.date - b.date });
+
                 chrome.storage.local.set(settings, function() {
                     //TODO: check runtime.error
 
@@ -110,6 +112,7 @@
         'getAlarms': function(message, callback) {
             chrome.storage.local.get(function(settings) {
                 //TODO: check runtime.error
+                settings.alarms.sort(function(a,b){return a.date - b.date });
                 callback({alarms: settings.alarms || []});
             });
 

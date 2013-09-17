@@ -16,7 +16,7 @@
 <body>
 <div class="contentWrapper" ng-controller="DontForgetCtrl">
     <div id="content">
-        <div class="center"><input id="reminderText" type="text" ng-model="reminderText" placeholder="Don't forget this!"></div>
+        <div class="center"><input id="reminderText" type="text" ng-model="reminderText" placeholder="Don't forget this!" style="width: 90%"></div>
         <div class="center">
             <div class="btn-group">
                 <button type="button" class="btn selected" ng-model="radioModel" btn-radio="'in'">IN</button>
@@ -52,7 +52,7 @@
             <input class="btn-primary" type="submit" value="Save" ng-click="SaveAlert()">
             <input class="btn-danger" type="submit" value="Cancel" ng-click="CloseWindow()">
         </div>
-        <div class="center" style="margin: 5px">
+        <div class="center" style="margin: 5px 0px 0px 0px">
             <alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
         </div>
     </div>
