@@ -97,11 +97,11 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
         var id = $scope.alerts[index].id;
 
         chrome.runtime.sendMessage({
-            action: 'deleteAlarm',
+            action: 'dismissAlarm',
             id: id
         }, function(response){
             if (response.error) {
-                console.error('deleteAlarm failed: ' + response.error)
+                console.error('dismissAlarm failed: ' + response.error)
             } else if (response.alarms) {
                 $scope.alerts = generateAlerts(response.alarms);
                 $scope.$digest();

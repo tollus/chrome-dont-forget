@@ -2,6 +2,13 @@
     "use strict";
 
     var autoClosingNotification;
+    var repeatEnumMinutes = {
+        'half hour': 30,
+        'hour': 60,
+        'day': 60 * 24,
+        'week': 60 * 24 * 7
+        // month + year ignored because it's special ...
+    };
 
     chrome.runtime.onStartup.addListener(init);
     chrome.runtime.onInstalled.addListener(init);
@@ -78,6 +85,68 @@
                     if (indexToDelete > -1) {
                         var alarm = settings.alarms.splice(indexToDelete, 1);
                         isFound = true;
+                    }
+                });
+
+                if (isFound) {
+                    chrome.storage.local.set(settings, function() {
+                        if (settings.alarms.length === 0) {
+                            alarmsRemoved();
+                        } else {
+                            alarmsCreated(settings.alarms);
+                        }
+                        callback({
+                            result: true,
+                            alarms: settings.alarms
+                        });
+
+                        // tell popup to refresh if it's open
+                        refreshPopup();
+                    });
+
+                } else {
+                    callback({
+                        result: false,
+                        alarms: settings.alarms
+                    });
+                }
+            });
+
+            // return true to process callback async
+            return true;
+        },
+        'dismissAlarm': function(message, callback) {
+            if (message.id === undefined) {
+                console.error('Missing id parameter in dismissAlarm call.');
+                callback({error: 'Missing id parameter.'});
+                return;
+            }
+            if (!message.id.length) {
+                message.id = [message.id];
+            }
+
+            chrome.storage.local.get(function(settings) {
+                // find alarm by id
+                var isFound;
+                message.id.forEach(function(id) {
+                    var foundIndex = -1;
+                    settings.alarms.every(function(value, index) {
+                        if (value.id === id) {
+                            foundIndex = index;
+                            return false;
+                        }
+                        return true;
+                    });
+
+                    if (foundIndex > -1) {
+                        isFound = true;
+
+                        var alarm = settings.alarms[foundIndex];
+                        if (alarm.repeat) {
+                            settings.alarms[foundIndex] = toNextAlarm(alarm);
+                        } else {
+                            settings.alarms.splice(foundIndex, 1);
+                        }
                     }
                 });
 
@@ -271,11 +340,11 @@
         } else {
             console.log("dismiss pressed");
             chrome.storage.local.get('firedAlertIDs', function(settings) {
-                msgFunctions['deleteAlarm'].call(this, {
+                msgFunctions['dismissAlarm'].call(this, {
                     id: settings.firedAlertIDs
                 }, function(response) {
                     if (response.error) {
-                        console.error('deleteAlarm failed: ' + response.error)
+                        console.error('dismissAlarm failed: ' + response.error)
                     }
                 });
             });
@@ -284,14 +353,36 @@
 
     function snoozeAlert()   {
         chrome.storage.local.get(function(settings) {
+            var newalarms = [];
             settings.alarms = settings.alarms.map(function(value,index) {
                 if (settings.firedAlertIDs.indexOf(value.id) > -1) {
                     var now = getCurrentDate();
 
-                    value.date = now + 1000 * 60 * 10; // 10 min
+                    if (value.repeat) {
+                        // create a new alarm for the snooze, and
+                        //  go to the next occurrence for this alarm
+                        //  this way we don't lose the original start time
+
+                        var snooze = duplicateAlarm(value, settings.uuid++);
+                        snooze.date = now + 1000 * 60 * 10; // 10 min
+                        delete snooze.repeat;
+                        if (snooze.originalStart) {
+                            delete snooze.originalStart;
+                        }
+                        newalarms.push(snooze);
+
+                        return toNextAlarm(value);
+                    } else {
+                        value.date = now + 1000 * 60 * 10; // 10 min
+                    }
                 }
                 return value;
             });
+
+            if (newalarms.length > 0) {
+                settings.alarms = settings.alarms.concat(newalarms);
+            }
+
             chrome.storage.local.set(settings, function() {
                 // tell popup to refresh if it's open
                 refreshPopup();
@@ -310,5 +401,41 @@
         if (autoClosingNotification) return;
 
         console.debug("notification closed");
+    }
+
+    // move to next occurrence
+    function toNextAlarm(alarm) {
+        if (!alarm.originalStart) {
+            alarm.originalStart = alarm.date;
+        }
+
+        var newdate = new Date(alarm.date);
+        var mins = repeatEnumMinutes[alarm.repeat];
+
+        if (mins) {
+            newdate.setMinutes(newdate.getMinutes() + mins);
+        } else if (alarm.repeat === 'month') {
+            newdate.setMonth(newdate.getMonth() + 1);
+        } else if (alarm.repeat === 'month') {
+            newdate.setFullYear(newdate.getFullYear() + 1);
+        } else {
+            //TODO: Handle error for invalid enum?
+            newdate.setMinutes(newdate.getMinutes() + 60);
+        }
+        alarm.date = newdate.getTime();
+
+        return alarm;
+    }
+
+    // returns duplicate alarm with a new uuid
+    function duplicateAlarm(alarm, nextId) {
+        var newalarm = {};
+        var i;
+        for( i in alarm ) {
+            newalarm[i] = alarm[i];
+        }
+
+        newalarm.id = nextId;
+        return newalarm;
     }
 }());
