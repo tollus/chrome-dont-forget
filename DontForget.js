@@ -1,6 +1,13 @@
+$(function() {
+    $( "#datepicker" ).datepicker();
+    $( "#format" ).change(function() {
+        $( "#datepicker" ).datepicker( "option", "dateFormat", $( this ).val() );
+    });
+});
+
 angular.module('DontForget', ['ui.bootstrap']);
 
-var DontForgetCtrl = function ($scope, $timeout)
+var DontForgetCtrl = function ($scope, $timeout, $filter)
 {
     //defaults
     $scope.ddInOn = ['in', 'on'];
@@ -26,6 +33,7 @@ var DontForgetCtrl = function ($scope, $timeout)
     };
     $scope.today();
     $scope.open = function() {
+
         $scope.opened = true;
     };
     $scope.dateOptions = {
@@ -44,9 +52,9 @@ var DontForgetCtrl = function ($scope, $timeout)
         var repeat = $scope.selectedRepeat;
 
         if($scope.radioModel == 'on') {
-            var mydate = $scope.dt;
+            var mydate = new Date($('#datepicker')[0].value);
             var mytime = $scope.mytime.split(':');
-            alertDateTime = Date.UTC(mydate.getFullYear(), mydate.getMonth(), mydate.getDate(), mytime[0], mytime[1], mytime[2]);
+            alertDateTime = Date.UTC(mydate.getFullYear(), mydate.getMonth(), mydate.getDate(), mytime[0], mytime[1], 0);
         } else {
             var mydate = new Date();
             mydate.setHours(mydate.getHours() + $scope.inHours);
@@ -135,18 +143,32 @@ var DontForgetCtrl = function ($scope, $timeout)
 
     function generateAlerts(alarms){
         return alarms.map(function(value, index){
+            var dateString;
             var dt = new Date(value.date);
+            var adjustedDT = new Date(value.date + (dt.getTimezoneOffset() * 60000));
 
-            return {
+             return {
                 id: value.id,
                 type: '',
-                msg: value.message + ' @ ' + dt.toUTCString()
+                msg: value.message + ' @ ' + $filter('date')(adjustedDT, friendlyDTFormat(adjustedDT))
             };
         });
     }
 
-    function formatDateTime(dt){
-        return dt.month
+    function friendlyDTFormat(adjustedDT){
+        var dateString = '';
+
+        if(adjustedDT.getDate() == new Date(Date.now()).getDate())
+        {
+            dateString = "'Today at' h:mm a";
+        }else if(adjustedDT.getDate() == new Date(Date.now()).getDate()+1){
+            dateString = "'Tomorrow at' h:mm a";
+        }else if(adjustedDT.getDate() == new Date(Date.now()).getDate()-1){
+            dateString = "'Yesterday at' h:mm a";
+        }else{
+            dateString = 'MMM d, y h:mm a';
+        }
+        return dateString;
     }
     // called from the background page
     window.refreshAlarms = loadAlerts;
