@@ -142,6 +142,7 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
     }
 
     function generateAlerts(alarms){
+        alarms.sort(function(a,b){return a.date - b.date });
         return alarms.map(function(value, index){
             var adjustedDT = new Date(value.date);
             // force to local timezone

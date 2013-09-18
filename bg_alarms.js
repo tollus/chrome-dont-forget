@@ -383,6 +383,8 @@
                 settings.alarms = settings.alarms.concat(newalarms);
             }
 
+            settings.alarms.sort(function(a,b){return a.date - b.date });
+
             chrome.storage.local.set(settings, function() {
                 // tell popup to refresh if it's open
                 refreshPopup();
