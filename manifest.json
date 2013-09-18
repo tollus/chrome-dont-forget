@@ -4,7 +4,7 @@
   "version": "0.1",
   "permissions": ["notifications", "storage", "alarms"],
   "background": {
-    "scripts": ["bg_settings.js", "bg_omnibox.js", "bg_alarms.js", "bg_sync.js"],
+    "scripts": ["background/settings.js", "background/omnibox.js", "background/alarms.js", "background/sync.js"],
     "persistent": false
   },
   "manifest_version": 2,
