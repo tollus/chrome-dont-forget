@@ -343,7 +343,7 @@
             snoozeAlert(notificationID);
         } else {
             console.log("dismiss pressed");
-            AppSettings.get('firedAlertIDs', function(settings) {
+            AppSettings.get(function(settings) {
                 msgFunctions['dismissAlarm'].call(this, {
                     id: settings.firedAlertIDs
                 }, function(response) {
