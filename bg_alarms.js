@@ -227,7 +227,7 @@
             }
 
             if (updateSettings) {
-                console.log('fixed settings ... adjusted to: ', settings);
+                console.log('initialized settings: ', settings);
                 chrome.storage.local.set(settings, function() {
                     //TODO: check runtime.error
                 });
