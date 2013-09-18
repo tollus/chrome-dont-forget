@@ -26,7 +26,7 @@ body{
 }
 
 .repeat{
-    background-image: url(images/Loop.png);
+    background-image: url(../images/Loop.png);
     width: 16px;
     height: 16px;
     margin-right: 3px;

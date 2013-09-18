@@ -251,7 +251,7 @@
             return;
         }
 
-        chrome.browserAction.setIcon({path: 'DontForget.png'});
+        chrome.browserAction.setIcon({path: 'images/logo128.png'});
         chrome.browserAction.setBadgeBackgroundColor({color:[255, 255, 255, 0]});
         chrome.browserAction.setBadgeText({text: alarms.length.toString()});
 
@@ -261,7 +261,7 @@
     // when there are no alarms left, remove the timeout
     function alarmsRemoved() {
         chrome.browserAction.setBadgeText({text: ''});
-        chrome.browserAction.setIcon({path: 'DontForgetBW.png'});
+        chrome.browserAction.setIcon({path: 'images/logo128-BW.png'});
 
         chrome.alarms.clearAll();
     }
@@ -318,7 +318,7 @@
                         type: "list",
                         title: "Don't Forget!",
                         message: "my message",
-                        iconUrl: "DontForget64.png",
+                        iconUrl: "images/logo_alarm64.png",
                         items: alertItems,
                         buttons: [{iconUrl: 'images/snooze.png', title: "Snooze"}, {iconUrl: 'images/dismiss.png', title: "Dismiss"}]
                     };
