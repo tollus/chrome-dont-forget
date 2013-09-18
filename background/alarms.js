@@ -17,6 +17,7 @@
     chrome.alarms.onAlarm.addListener(alarmFired);
     chrome.notifications.onClosed.addListener(notificationClosed);
     chrome.notifications.onButtonClicked.addListener(buttonClicked);
+    chrome.storage.onChanged.addListener(storageChanged);
 
     // shared functions for runtime.sendMessage
     var msgFunctions = {
@@ -235,6 +236,15 @@
         });
     }
 
+    function storageChanged(changes, area) {
+        if (area === 'sync') {
+            if (changes.alarms) {
+                alarmsCreated(changes.alarms.newValue);
+                refreshPopup();
+            }
+        }
+    }
+
     // tell popup to refresh if it's open
     function refreshPopup() {
         chrome.extension.getViews({type:'popup'}).forEach(function(pop) {
@@ -266,15 +276,17 @@
         chrome.browserAction.setBadgeText({text: ''});
         chrome.browserAction.setIcon({path: 'images/logo_BW128.png'});
 
-        chrome.alarms.getAll(function(alarms) {
-            alarms.every(function(alarm) {
-                if (alarm.name === "alerts") {
-                    chrome.alarms.clear(alarm.name);
-                    return false;
-                }
-                return true;
+        if (alarmActive !== false) {
+            chrome.alarms.getAll(function(alarms) {
+                alarms.every(function(alarm) {
+                    if (alarm.name === "alerts") {
+                        chrome.alarms.clear(alarm.name);
+                        return false;
+                    }
+                    return true;
+                });
             });
-        });
+        }
         alarmActive = false;
     }
 
