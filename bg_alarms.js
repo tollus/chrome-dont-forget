@@ -1,6 +1,7 @@
-;(function(undefined) {
+;(function(AppSettings, undefined) {
     "use strict";
 
+    var alarmActive;
     var autoClosingNotification;
     var repeatEnumMinutes = {
         'half hour': 30,
@@ -37,23 +38,22 @@
 
                 */
 
-            chrome.storage.local.get(function(settings) {
-                //TODO: check runtime.error
-
+            AppSettings.get(function(settings) {
                 message.alarm.id = settings.uuid++;
                 settings.alarms.push(message.alarm);
 
                 settings.alarms.sort(function(a,b){return a.date - b.date });
 
-                chrome.storage.local.set(settings, function() {
-                    //TODO: check runtime.error
-
+                AppSettings.set(settings, function() {
                     // wait to respond and update icon when set finishes
                     alarmsCreated(settings.alarms);
 
                     callback({alarms: settings.alarms});
-                    // tell popup to refresh if it's open
-                    refreshPopup();
+
+                    if (!message.fromPopup) {
+                        // tell popup to refresh if it's open
+                        refreshPopup();
+                    }
                 });
             });
             // return true to process callback async
@@ -69,7 +69,7 @@
                 message.id = [message.id];
             }
 
-            chrome.storage.local.get(function(settings) {
+            AppSettings.get(function(settings) {
                 // find alarm by id
                 var isFound;
                 message.id.forEach(function(id) {
@@ -89,7 +89,7 @@
                 });
 
                 if (isFound) {
-                    chrome.storage.local.set(settings, function() {
+                    AppSettings.set(settings, function() {
                         if (settings.alarms.length === 0) {
                             alarmsRemoved();
                         } else {
@@ -100,8 +100,10 @@
                             alarms: settings.alarms
                         });
 
-                        // tell popup to refresh if it's open
-                        refreshPopup();
+                        if (!message.fromPopup) {
+                            // tell popup to refresh if it's open
+                            refreshPopup();
+                        }
                     });
 
                 } else {
@@ -125,7 +127,7 @@
                 message.id = [message.id];
             }
 
-            chrome.storage.local.get(function(settings) {
+            AppSettings.get(function(settings) {
                 // find alarm by id
                 var isFound;
                 message.id.forEach(function(id) {
@@ -151,7 +153,7 @@
                 });
 
                 if (isFound) {
-                    chrome.storage.local.set(settings, function() {
+                    AppSettings.set(settings, function() {
                         if (settings.alarms.length === 0) {
                             alarmsRemoved();
                         } else {
@@ -162,8 +164,10 @@
                             alarms: settings.alarms
                         });
 
-                        // tell popup to refresh if it's open
-                        refreshPopup();
+                        if (!message.fromPopup) {
+                            // tell popup to refresh if it's open
+                            refreshPopup();
+                        }
                     });
 
                 } else {
@@ -178,8 +182,7 @@
             return true;
         },
         'getAlarms': function(message, callback) {
-            chrome.storage.local.get(function(settings) {
-                //TODO: check runtime.error
+            AppSettings.get(function(settings) {
                 settings.alarms.sort(function(a,b){return a.date - b.date });
                 callback({alarms: settings.alarms || []});
             });
@@ -193,8 +196,7 @@
         console.debug('init called');
 
         // check settings to update badge count
-        chrome.storage.local.get(function(settings) {
-            //TODO: check runtime.error
+        AppSettings.get(function(settings) {
             var updateSettings = false;
             console.debug('settings: ', settings);
 
@@ -228,9 +230,7 @@
 
             if (updateSettings) {
                 console.log('initialized settings: ', settings);
-                chrome.storage.local.set(settings, function() {
-                    //TODO: check runtime.error
-                });
+                AppSettings.set(settings, function() {});
             }
         });
     }
@@ -251,11 +251,14 @@
             return;
         }
 
-        chrome.browserAction.setIcon({path: 'images/logo128.png'});
-        chrome.browserAction.setBadgeBackgroundColor({color:[255, 255, 255, 0]});
         chrome.browserAction.setBadgeText({text: alarms.length.toString()});
 
-        chrome.alarms.create("alerts", {delayInMinutes: .1, periodInMinutes: .25});
+        if (!alarmActive) {
+            chrome.browserAction.setIcon({path: 'images/logo128.png'});
+            chrome.browserAction.setBadgeBackgroundColor({color:[255, 255, 255, 0]});
+            chrome.alarms.create("alerts", {delayInMinutes: .1, periodInMinutes: .25});
+            alarmActive = true;
+        }
     }
 
     // when there are no alarms left, remove the timeout
@@ -263,7 +266,8 @@
         chrome.browserAction.setBadgeText({text: ''});
         chrome.browserAction.setIcon({path: 'images/logo_BW128.png'});
 
-        chrome.alarms.clearAll();
+        chrome.alarms.clear("alerts");
+        alarmActive = false;
     }
 
     function messageReceived(message, sender, callback) {
@@ -288,9 +292,11 @@
         callback({error: 'Action ' + message.action + ' not implemented.'});
     }
 
-    function alarmFired() {
-        console.debug("alarm fired");
-        notify();
+    function alarmFired(alarm) {
+        if (alarm.name === "alerts") {
+            console.debug("alarm fired");
+            notify();
+        }
     }
 
     function notify() {
@@ -299,7 +305,7 @@
         var currentDT = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(),
                                 now.getHours(), now.getMinutes());
 
-        chrome.storage.local.get(function(settings) {
+        AppSettings.get(function(settings) {
             var firedAlertIDs = [];
 
             settings.alarms.forEach(function(value, index) {
@@ -309,9 +315,7 @@
                 }
             });
 
-            chrome.storage.local.set({firedAlertIDs: firedAlertIDs}, function() {
-                //TODO: check runtime.err
-
+            AppSettings.set({firedAlertIDs: firedAlertIDs}, function() {
                 if (alertItems.length > 0) {
                     console.debug(alertItems);
                     var opts = {
@@ -339,7 +343,7 @@
             snoozeAlert(notificationID);
         } else {
             console.log("dismiss pressed");
-            chrome.storage.local.get('firedAlertIDs', function(settings) {
+            AppSettings.get('firedAlertIDs', function(settings) {
                 msgFunctions['dismissAlarm'].call(this, {
                     id: settings.firedAlertIDs
                 }, function(response) {
@@ -352,7 +356,7 @@
     }
 
     function snoozeAlert()   {
-        chrome.storage.local.get(function(settings) {
+        AppSettings.get(function(settings) {
             var newalarms = [];
             settings.alarms = settings.alarms.map(function(value,index) {
                 if (settings.firedAlertIDs.indexOf(value.id) > -1) {
@@ -385,7 +389,7 @@
 
             settings.alarms.sort(function(a,b){return a.date - b.date });
 
-            chrome.storage.local.set(settings, function() {
+            AppSettings.set(settings, function() {
                 // tell popup to refresh if it's open
                 refreshPopup();
             });
@@ -440,4 +444,4 @@
         newalarm.id = nextId;
         return newalarm;
     }
-}());
+}(window.AppSettings));

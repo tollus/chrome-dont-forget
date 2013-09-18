@@ -76,6 +76,7 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
 
         chrome.runtime.sendMessage({
             action: 'addAlarm',
+            fromPopup: true,
             alarm: {
                 date: alertDateTime,
                 message: message,
@@ -98,6 +99,7 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
 
         chrome.runtime.sendMessage({
             action: 'dismissAlarm',
+            fromPopup: true,
             id: id
         }, function(response){
             if (response.error) {
