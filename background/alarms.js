@@ -276,6 +276,8 @@
         chrome.browserAction.setBadgeText({text: ''});
         chrome.browserAction.setIcon({path: 'images/logo_BW128.png'});
 
+        chrome.notifications.clear("alerts", function() {});
+
         if (alarmActive !== false) {
             chrome.alarms.getAll(function(alarms) {
                 alarms.every(function(alarm) {
@@ -373,6 +375,8 @@
                 });
             });
         }
+
+        chrome.notifications.clear("alerts", function() {});
     }
 
     function snoozeAlert()   {
