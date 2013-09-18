@@ -1,7 +1,7 @@
 Don't Forget!
 =============
 
-Chrome extension for Don't Forget, reminder management
+Don't Forget lets you add reminders to chrome which get synced across all sync enabled chrome instances
 
 Licenses
 ========

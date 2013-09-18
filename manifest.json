@@ -1,6 +1,6 @@
 {
   "name": "Don't Forget",
-  "description": "Don't Forget adds reminders",
+  "description": "Don't Forget lets you add reminders to chrome which get synced across all sync enabled chrome instances",
   "version": "0.1",
   "permissions": ["notifications", "storage", "alarms"],
   "background": {
