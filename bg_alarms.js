@@ -261,7 +261,7 @@
     // when there are no alarms left, remove the timeout
     function alarmsRemoved() {
         chrome.browserAction.setBadgeText({text: ''});
-        chrome.browserAction.setIcon({path: 'images/logo128-BW.png'});
+        chrome.browserAction.setIcon({path: 'images/logo_BW128.png'});
 
         chrome.alarms.clearAll();
     }
