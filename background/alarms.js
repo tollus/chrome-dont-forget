@@ -193,7 +193,7 @@
     };
 
     function init() {
-        console.debug('init called');
+        console.debug('alarms init called');
 
         // check settings to update badge count
         AppSettings.get(function(settings) {
@@ -237,11 +237,11 @@
 
     // tell popup to refresh if it's open
     function refreshPopup() {
-        var pop = chrome.extension.getViews({type:'popup'});
-        if (pop.length === 1) {
-            pop = pop[0];
-            pop.refreshAlarms();
-        }
+        chrome.extension.getViews({type:'popup'}).forEach(function(pop) {
+            if (pop.refreshAlarms) {
+                pop.refreshAlarms();
+            }
+        });
     }
 
     // when there are alarms, add the timeout and update the icon
@@ -256,7 +256,7 @@
         if (!alarmActive) {
             chrome.browserAction.setIcon({path: 'images/logo128.png'});
             chrome.browserAction.setBadgeBackgroundColor({color:[255, 255, 255, 0]});
-            chrome.alarms.create("alerts", {delayInMinutes: .1, periodInMinutes: .25});
+            chrome.alarms.create("alerts", {periodInMinutes: 1});
             alarmActive = true;
         }
     }
@@ -266,7 +266,15 @@
         chrome.browserAction.setBadgeText({text: ''});
         chrome.browserAction.setIcon({path: 'images/logo_BW128.png'});
 
-        chrome.alarms.clear("alerts");
+        chrome.alarms.getAll(function(alarms) {
+            alarms.every(function(alarm) {
+                if (alarm.name === "alerts") {
+                    chrome.alarms.clear(alarm.name);
+                    return false;
+                }
+                return true;
+            });
+        });
         alarmActive = false;
     }
 
