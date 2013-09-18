@@ -320,7 +320,7 @@
                         message: "my message",
                         iconUrl: "DontForget64.png",
                         items: alertItems,
-                        buttons: [{iconUrl: 'snooze.png', title: "Snooze"}, {iconUrl: 'dismiss.png', title: "Dismiss"}]
+                        buttons: [{iconUrl: 'images/snooze.png', title: "Snooze"}, {iconUrl: 'images/dismiss.png', title: "Dismiss"}]
                     };
 
                     autoClosingNotification = true;
