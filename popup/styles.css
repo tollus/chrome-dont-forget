@@ -7,7 +7,6 @@ body{
     margin: 10px 0px 10px 0px;
     height: 350px;
     background-color: #FFFFFF;
-
 }
 
 .center{
@@ -24,6 +23,17 @@ body{
     -moz-border-radius: 4px;
     border-radius: 4px;
 }
+.alert-error{
+    padding: 8px 25px 8px 0px;
+    margin-bottom: 5px;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    background-color: #f2dede;
+    border: 1px solid #eed3d7;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    color: #b94a48;
+}
 
 .repeat{
     background-image: url(../images/Loop.png);
@@ -32,4 +42,8 @@ body{
     margin-right: 3px;
     display: inline-block;
     vertical-align: middle;
+}
+
+.trashcan{
+    background-image: url(chrome://resources/images/trash.png);
 }

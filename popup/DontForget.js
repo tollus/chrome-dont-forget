@@ -137,7 +137,7 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
             if (response.error) {
                 console.error('getAlarms failed: ' + response.error)
             } else if (response.alarms) {
-                $scope.alerts = generateAlerts(response.alarms).slice(0,5);
+                $scope.alerts = generateAlerts(response.alarms);
                 $scope.$digest();
             }
         });
@@ -153,6 +153,7 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
              return {
                 id: value.id,
                 type: '',
+                date: value.date,
                 repeat: value.repeat ? "repeat" : '',
                 msg: value.message + ' @ ' + $filter('date')(adjustedDT, friendlyDTFormat(adjustedDT))
             };
@@ -175,6 +176,37 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
         return dateString;
     }
 
+    $scope.getAlertClass = function (date){
+        return date <= getCurrentDate() ? 'alert-error' : 'alert';
+    }
+
+    function getCurrentDate() {
+        var now = new Date();
+        return Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), 0);
+    }
+
+    $scope.DeleteAlert = function (id){
+        chrome.runtime.sendMessage({
+            action: 'deleteAlarm',
+            fromPopup: false,
+            id: id
+        }, function(response){
+            if (response.error) {
+                console.error('deleteAlarm failed: ' + response.error)
+            } else if (response.alarms) {
+                $scope.alerts = generateAlerts(response.alarms);
+                $scope.$digest();
+            }
+        });
+    }
+
+    $scope.showTooltip = function(repeat){
+        return repeat ? "This will delete all occurances of this reminder" : '';
+    }
+
+    $scope.createTab = function (){
+        chrome.tabs.create({url: '../other/alarmmgmt.html', active: true});
+    }
     // called from the background page
     window.refreshAlarms = loadAlerts;
 };

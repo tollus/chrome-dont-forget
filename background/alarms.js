@@ -51,10 +51,7 @@
 
                     callback({alarms: settings.alarms});
 
-                    if (!message.fromPopup) {
-                        // tell popup to refresh if it's open
                         refreshPopup();
-                    }
                 });
             });
             // return true to process callback async
@@ -101,10 +98,7 @@
                             alarms: settings.alarms
                         });
 
-                        if (!message.fromPopup) {
-                            // tell popup to refresh if it's open
                             refreshPopup();
-                        }
                     });
 
                 } else {
@@ -165,10 +159,7 @@
                             alarms: settings.alarms
                         });
 
-                        if (!message.fromPopup) {
-                            // tell popup to refresh if it's open
                             refreshPopup();
-                        }
                     });
 
                 } else {
@@ -252,6 +243,12 @@
                 pop.refreshAlarms();
             }
         });
+        chrome.extension.getViews({type:'tab'}).forEach(function(tab) {
+            if (tab.refreshAlarms) {
+                tab.refreshAlarms();
+            }
+        });
+
     }
 
     // when there are alarms, add the timeout and update the icon

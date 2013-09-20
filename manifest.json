@@ -17,5 +17,6 @@
   },
   "icons": {
     "128": "images/logo128.png"
-  }
+  },
+  "options_page": "other/alarmmgmt.html"
 }
