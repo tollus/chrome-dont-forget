@@ -46,12 +46,7 @@
                 settings.alarms.sort(function(a,b){return a.date - b.date });
 
                 AppSettings.set(settings, function() {
-                    // wait to respond and update icon when set finishes
-                    alarmsCreated(settings.alarms);
-
                     callback({alarms: settings.alarms});
-
-                        refreshPopup();
                 });
             });
             // return true to process callback async
@@ -88,17 +83,10 @@
 
                 if (isFound) {
                     AppSettings.set(settings, function() {
-                        if (settings.alarms.length === 0) {
-                            alarmsRemoved();
-                        } else {
-                            alarmsCreated(settings.alarms);
-                        }
                         callback({
                             result: true,
                             alarms: settings.alarms
                         });
-
-                            refreshPopup();
                     });
 
                 } else {
@@ -149,17 +137,10 @@
 
                 if (isFound) {
                     AppSettings.set(settings, function() {
-                        if (settings.alarms.length === 0) {
-                            alarmsRemoved();
-                        } else {
-                            alarmsCreated(settings.alarms);
-                        }
                         callback({
                             result: true,
                             alarms: settings.alarms
                         });
-
-                            refreshPopup();
                     });
 
                 } else {
@@ -230,6 +211,8 @@
     function storageChanged(changes, area) {
         if (area === 'sync') {
             if (changes.alarms) {
+                console.debug('sync storage alarms changed, refreshing popups.');
+
                 alarmsCreated(changes.alarms.newValue);
                 refreshPopup();
             }
@@ -240,11 +223,13 @@
     function refreshPopup() {
         chrome.extension.getViews({type:'popup'}).forEach(function(pop) {
             if (pop.refreshAlarms) {
+                console.debug('refreshing popup.');
                 pop.refreshAlarms();
             }
         });
         chrome.extension.getViews({type:'tab'}).forEach(function(tab) {
             if (tab.refreshAlarms) {
+                console.debug('refreshing tab.');
                 tab.refreshAlarms();
             }
         });
