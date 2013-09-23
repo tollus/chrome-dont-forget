@@ -27,6 +27,10 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
     console.log('Loading alerts...');
     loadAlerts();
 
+    $scope.settings = {
+        snoozeTime: 10
+    };
+
     //datepicker
     $scope.today = function() {
         $scope.dt = new Date();
@@ -178,7 +182,7 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
 
     $scope.getAlertClass = function (date){
         return date <= getCurrentDate() ? 'alert-error' : 'alert';
-    }
+    };
 
     function getCurrentDate() {
         var now = new Date();
@@ -198,15 +202,41 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
                 $scope.$digest();
             }
         });
-    }
+    };
 
     $scope.showTooltip = function(repeat){
         return repeat ? "This will delete all occurances of this reminder" : '';
-    }
+    };
 
     $scope.createTab = function (){
         chrome.tabs.create({url: '../other/alarmmgmt.html', active: true});
-    }
+    };
+
+    $scope.SaveSettings = function() {
+        chrome.runtime.sendMessage({
+            action: 'saveSettings',
+            settings: $scope.settings
+        }, function(response) {
+            if (response.error) {
+                console.error('saveSettings failed: ' + response.error)
+            } else {
+                $('#settings-saved-alert').show();
+                setTimeout(function() {
+                    $('#settings-saved-alert').hide('fade');
+                }, 1500);
+            }
+        });
+    };
+
+    $scope.loadSettings = function() {
+        chrome.runtime.sendMessage({
+            action: 'getSettings'
+        }, function(response) {
+            $scope.settings = $.extend({}, response.settings);
+            $scope.$digest();
+        });
+    };
+
     // called from the background page
     window.refreshAlarms = loadAlerts;
 };

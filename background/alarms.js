@@ -162,6 +162,27 @@
 
             // return true to process callback async
             return true;
+        },
+        'saveSettings': function(message, callback) {
+            if (!message.settings) {
+                callback({error: 'Missing settings property.'});
+                return;
+            }
+
+            AppSettings.set({settings: message.settings}, function() {
+                callback({result:true});
+            });
+
+            // return true to process callback async
+            return true;
+        },
+        'getSettings': function(message, callback) {
+            AppSettings.get(function(settings) {
+                callback({settings: settings.settings});
+            });
+
+            // return true to process callback async
+            return true;
         }
     };
 
@@ -199,6 +220,13 @@
                 }
             } else {
                 alarmsRemoved();
+            }
+
+            if (!settings.settings) {
+                settings.settings = {
+                    snoozeTime: 10
+                };
+                updateSettings = true;
             }
 
             if (updateSettings) {
@@ -364,6 +392,8 @@
     function snoozeAlert()   {
         AppSettings.get(function(settings) {
             var newalarms = [];
+            var snoozeTime = (settings.settings.snoozeTime || 10) * 60 * 1000;
+
             settings.alarms = settings.alarms.map(function(value,index) {
                 if (settings.firedAlertIDs.indexOf(value.id) > -1) {
                     var now = getCurrentDate();
@@ -374,7 +404,7 @@
                         //  this way we don't lose the original start time
 
                         var snooze = duplicateAlarm(value, settings.uuid++);
-                        snooze.date = now + 1000 * 60 * 10; // 10 min
+                        snooze.date = now + snoozeTime;
                         delete snooze.repeat;
                         if (snooze.originalStart) {
                             delete snooze.originalStart;
@@ -383,7 +413,7 @@
 
                         return toNextAlarm(value);
                     } else {
-                        value.date = now + 1000 * 60 * 10; // 10 min
+                        value.date = now + snoozeTime;
                     }
                 }
                 return value;

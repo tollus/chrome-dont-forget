@@ -24,8 +24,22 @@
                     <div ng-hide="alerts.length">There are no reminders set to manage</div>
                 </div>
             </tab>
-            <tab heading="Settings">
-                <div class="center">Put some settings here Andy!!!</div>
+            <tab heading="Settings" select="loadSettings()">
+            	<form class="form-horizontal">
+            		<div class="control-group">
+            			<label class="control-label" for="settings.snoozeTime">Snooze Time</label>
+		                <div class="controls">
+							<input type="number" id="settings.snoozeTime" min="5" max="60" ng-model="settings.snoozeTime" style="width:35px" />
+							(minutes)
+	    	        	</div>
+    	        	</div>
+
+	            	<button class="btn btn-primary" ng-click="SaveSettings()">Save</button>
+	            	<div id="settings-saved-alert" class="alert alert-success hide">
+	            		<a class="close" data-dismiss="alert" href="#">&times;</a>
+						Settings have been saved.
+	            	</div>
+            	</form>
             </tab>
         </tabset>
     </div>
