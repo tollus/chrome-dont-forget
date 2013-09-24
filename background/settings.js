@@ -2,7 +2,7 @@
 
     chrome.runtime.onMessage.addListener(messageReceived);
 
-    var syncProps = ['alarms', 'uuid'];
+    var syncProps = ['alarms', 'uuid', 'settings'];
 
     var msgFunctions = {
         'saveSettings': function(message, callback) {

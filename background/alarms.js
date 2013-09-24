@@ -10,6 +10,11 @@
         'week': 60 * 24 * 7
         // month + year ignored because it's special ...
     };
+    var defaultSettings = {
+        snoozeTime: 10,
+        timeFormat: 'h:mm a',
+        dateFormat: 'MMM d, y'
+    };
 
     chrome.runtime.onStartup.addListener(init);
     chrome.runtime.onInstalled.addListener(init);
@@ -219,6 +224,15 @@
         }
     };
 
+    // http://stackoverflow.com/a/11197343
+    function extend(){
+        for(var i=1; i<arguments.length; i++)
+            for(var key in arguments[i])
+                if(arguments[i].hasOwnProperty(key))
+                    arguments[0][key] = arguments[i][key];
+        return arguments[0];
+    }
+
     function init() {
         console.debug('alarms init called');
 
@@ -256,10 +270,17 @@
             }
 
             if (!settings.settings) {
-                settings.settings = {
-                    snoozeTime: 10
-                };
+                settings.settings = defaultSettings;
                 updateSettings = true;
+            } else {
+                // did we add a new setting?
+                for (var x in defaultSettings) {
+                    if (defaultSettings.hasOwnProperty(x) && settings.settings[x] === undefined) {
+                        updateSettings = true;
+                        settings.settings = extend({}, defaultSettings, settings.settings);
+                        break;
+                    }
+                }
             }
 
             if (updateSettings) {

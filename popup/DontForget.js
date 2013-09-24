@@ -9,6 +9,8 @@ angular.module('DontForget', ['ui.bootstrap']);
 
 var DontForgetCtrl = function ($scope, $timeout, $filter)
 {
+    var _settings = {};
+
     //defaults
     $scope.ddInOn = ['in', 'on'];
     $scope.ddRepeat = ['never', 'half hour', 'hour', 'day', 'week', 'year'];
@@ -134,18 +136,26 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
 
     function loadAlerts(){
         chrome.runtime.sendMessage({
-            action: 'getAlarms'
-        }, function(response){
-            console.debug('received getAlarms message: ', response);
+            action: 'getSettings'
+        }, function(settings) {
+            // store settings locally
+            _settings = settings.settings;
 
-            if (response.error) {
-                console.error('getAlarms failed: ' + response.error)
-            } else if (response.alarms) {
-                $scope.alerts = generateAlerts(response.alarms);
-                $scope.$digest();
-            }
+            chrome.runtime.sendMessage({
+                action: 'getAlarms'
+            }, function(response){
+                console.debug('received getAlarms message: ', response);
+
+                if (response.error) {
+                    console.error('getAlarms failed: ' + response.error)
+                } else if (response.alarms) {
+                    $scope.alerts = generateAlerts(response.alarms);
+                    $scope.$digest();
+                }
+            });
         });
     }
+    $scope.loadAlerts = loadAlerts;
 
     function generateAlerts(alarms){
         alarms.sort(function(a,b){return a.date - b.date });
@@ -167,15 +177,17 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
     function friendlyDTFormat(adjustedDT){
         var now = new Date();
         var dateString = '';
+        var tf = _settings.timeFormat || 'h:mm a';
+        var df = _settings.dateFormat || 'MMM d, y';
 
         if (adjustedDT.getDate() == now.getDate()) {
-            dateString = "'Today at' h:mm a";
+            dateString = "'Today at' " + tf;
         } else if (adjustedDT.getDate() == now.getDate()+1) {
-            dateString = "'Tomorrow at' h:mm a";
+            dateString = "'Tomorrow at' " + tf;
         } else if (adjustedDT.getDate() == now.getDate()-1) {
-            dateString = "'Yesterday at' h:mm a";
+            dateString = "'Yesterday at' " + tf;
         } else {
-            dateString = 'MMM d, y h:mm a';
+            dateString = df + ' ' + tf;
         }
         return dateString;
     }
