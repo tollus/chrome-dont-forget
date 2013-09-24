@@ -220,7 +220,7 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
     };
 
     $scope.showTooltip = function(repeat){
-        return repeat ? "This will delete all occurances of this reminder" : '';
+        return repeat ? "This will delete all occurrences of this reminder" : '';
     };
 
     $scope.createTab = function (){
@@ -252,7 +252,12 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
         });
     };
 
-    $scope.mgmtTabActive = (location.hash == '#mgmt');
+    $timeout(function() {
+        $scope.activeTab = {
+            mgmt: (location.hash == '#mgmt'),
+            settings: (location.hash != '#mgmt')
+        };
+    }, 0);
 
     // called from the background page
     window.refreshAlarms = loadAlerts;

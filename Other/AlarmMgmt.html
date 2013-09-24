@@ -12,12 +12,11 @@
     <script src="../vendor/angular-ui.min.js" type="text/javascript"></script>
     <script src="../vendor/ui-bootstrap-tpls.min.js" type="text/javascript"></script>
     <script src="../popup/DontForget.js"></script>
-    <script src="../background/alerms.js"></script>
 </head>
 <body>
     <div id="mainContainer" class="contentWrapper" style="margin: 20px;" ng-controller="DontForgetCtrl">
         <tabset>
-            <tab heading="Reminder Mgmt" active="mgmtTabActive">
+            <tab heading="Reminder Mgmt" active="activeTab.mgmt">
                 <div class="center" style="margin: 5px 0px 0px 0px; height: 500px">
                     <div ng-repeat="alert in alerts" ng-class="getAlertClass(alert.date)" type="alert.type" close="closeAlert($index)">
                         <span class="{{alert.repeat}}">&nbsp;</span>{{alert.msg}}
@@ -29,7 +28,7 @@
                     <div ng-hide="alerts.length">There are no reminders set to manage</div>
                 </div>
             </tab>
-            <tab heading="Settings" select="loadSettings()">
+            <tab heading="Settings" select="loadSettings()" active="activeTab.settings">
                 <form class="form-horizontal">
                     <div class="control-group">
                         <label class="control-label" for="settings.snoozeTime">Snooze Time</label>

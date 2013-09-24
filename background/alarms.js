@@ -376,7 +376,7 @@
             return fn.call(this, message, callback);
         }
 
-        callback({error: 'Action ' + message.action + ' not implemented.'});
+        return false;
     }
 
     function alarmFired(alarm) {
