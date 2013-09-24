@@ -278,7 +278,7 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
         };
     };
 
-    $scope.isExpired = function(date){
-        return date < getCurrentDate();
+    $scope.isNotExpired = function(item){
+        return item.date > getCurrentDate();
     };
 };

@@ -409,6 +409,7 @@
                         var url = chrome.extension.getURL('../other/alarmmgmt.html#mgmt');
                         chrome.tabs.create({url: url, active: true});
                     }
+                    refreshPopup();
                 }
             });
         });
