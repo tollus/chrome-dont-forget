@@ -373,8 +373,6 @@
             return;
         }
 
-        console.debug( 'messageReceived action: ' + message.action + ' object: ', message);
-
         if (!(message !== null && message.action)) {
             // invalid message received
             callback({error: 'Invalid message received.'});
@@ -383,6 +381,7 @@
 
         var fn = msgFunctions[message.action];
         if (fn) {
+            console.debug( 'alarms.messageReceived action: ' + message.action + ' object: ', message);
             return fn.call(this, message, callback);
         }
 
