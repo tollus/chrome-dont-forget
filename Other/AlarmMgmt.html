@@ -14,16 +14,16 @@
     <script src="../popup/DontForget.js"></script>
 </head>
 <body>
-    <div id="mainContainer" class="" style="margin: 20px;" ng-controller="DontForgetCtrl">
+    <div id="mainContainer" class="" style="margin: 20px;" ng-controller="DontForgetCtrl" ng-init="mgmtInit()">
         <tabset>
             <tab heading="Reminder Mgmt" select="loadAlerts()" active="activeTab.mgmt">
-                <div class="center" style="margin: 5px 0px 0px 0px; height: 500px">
+                <div class="contentWrapper center" style="margin: 5px 0px 0px 0px; height: 500px">
                     <div ng-repeat="alert in alerts" ng-class="getAlertClass(alert.date)" type="alert.type" close="closeAlert($index)">
                         <span class="{{alert.repeat}}">&nbsp;</span>{{alert.msg}}
                         <span class="pull-right">
-                        	<span ng-show="isExpired({{alert.date}})"><a href="" ng-click="SnoozeAlert({{alert.id}})"><img src="../images/snooze.png" class="snooze"></a></span>
-                        	<span tooltip="{{showTooltip(alert.repeat)}}"><a href="" ng-Click="DeleteAlert({{alert.id}})"><i class="icon-trash"></i></a></span>
-                    	</span>
+                            <span ng-show="isExpired(alert.date)"><a href="" ng-click="SnoozeAlert({{alert.id}})"><img src="../img/snooze.png" class="snooze"></a></span>
+                            <span tooltip="{{showTooltip(alert.repeat)}}"><a href="" ng-Click="DeleteAlert({{alert.id}})"><i class="icon-trash"></i></a></span>
+                        </span>
                     </div>
                     <div ng-hide="alerts.length">There are no reminders set to manage</div>
                 </div>
@@ -42,8 +42,8 @@
                         <label class="control-label" for="settings.timeFormat">Time Format</label>
                         <div class="controls">
                             <select id="settings.timeFormat" ng-model="settings.timeFormat">
-								<option value="h:mm a">4:05 pm</option>
-								<option value="HH:mm">16:05</option>
+                                <option value="h:mm a">4:05 pm</option>
+                                <option value="HH:mm">16:05</option>
                             </select>
                         </div>
                     </div>
@@ -52,8 +52,20 @@
                         <label class="control-label" for="settings.dateFormat">Date Format</label>
                         <div class="controls">
                             <select id="settings.dateFormat" ng-model="settings.dateFormat">
-								<option value="MMM d, y">Sep 5, 2013</option>
-								<option value="y-MM-dd">2013-09-05</option>
+                                <option value="MMM d, y">Sep 5, 2013</option>
+                                <option value="y-MM-dd">2013-09-05</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="settings.notifType">Notification Type</label>
+                        <div class="controls">
+                            <select id="settings.notifType" ng-model="settings.notifType">
+                                <option value="notification">Show a desktop notification</option>
+                                <option value="popup">Open a tab</option>
+                                <option value="popupNotification">Both</option>
+                                <option value="">Neither</option>
                             </select>
                         </div>
                     </div>

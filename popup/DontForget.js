@@ -1,8 +1,5 @@
 $(function() {
     $( "#datepicker" ).datepicker();
-    $( "#format" ).change(function() {
-        $( "#datepicker" ).datepicker( "option", "dateFormat", $( this ).val() );
-    });
 });
 
 angular.module('DontForget', ['ui.bootstrap']);
@@ -11,23 +8,7 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
 {
     var _settings = {};
 
-    //defaults
-    $scope.ddInOn = ['in', 'on'];
-    $scope.ddRepeat = ['never', 'half hour', 'hour', 'day', 'week', 'year'];
-    $scope.radioModel = 'in';
-    $scope.showWeeks = false;
-    var date = new Date();
-    // round to next 15 minutes
-    date.setMinutes(date.getMinutes() + 15 + (15 - (date.getMinutes() % 15)));
-
-    var hours = date.getHours();
-
-    $scope.mytime = padTime(hours) + ":" + padTime(date.getMinutes());
-    SetDefaults();
-
     $scope.alerts = [];
-    console.log('Loading alerts...');
-    loadAlerts();
 
     $scope.settings = {
         snoozeTime: 10
@@ -46,11 +27,6 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
         'year-format': "'yy'",
         'starting-day': 1
     };
-
-    $scope.selectedRepeat = "Repeat Every"
-    $scope.onRepeatClicked = function(event) {
-        $scope.selectedRepeat = event;
-    }
 
     $scope.SaveAlert = function(){
         var message = $scope.reminderText || '';
@@ -157,6 +133,9 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
     }
     $scope.loadAlerts = loadAlerts;
 
+    // called from the background page
+    window.refreshAlarms = loadAlerts;
+
     function generateAlerts(alarms){
         alarms.sort(function(a,b){return a.date - b.date });
         return alarms.map(function(value, index){
@@ -164,7 +143,7 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
             // force to local timezone
             adjustedDT.setMinutes(adjustedDT.getMinutes() + adjustedDT.getTimezoneOffset());
 
-             return {
+            return {
                 id: value.id,
                 type: '',
                 date: value.date,
@@ -236,7 +215,9 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
     };
 
     $scope.createTab = function (){
-        chrome.tabs.create({url: '../other/alarmmgmt.html#mgmt', active: true});
+        // TODO: check for tab already open
+        var url = chrome.extension.getURL('../other/alarmmgmt.html#mgmt');
+        chrome.tabs.create({url: url, active: true});
     };
 
     $scope.SaveSettings = function() {
@@ -264,17 +245,40 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
         });
     };
 
-    $timeout(function() {
-        $scope.activeTab = {
-            mgmt: (location.hash == '#mgmt'),
-            settings: (location.hash != '#mgmt')
+    $scope.mgmtInit = function() {
+        console.log('mgmtInit');
+
+        $timeout(function(){
+            $scope.activeTab = {
+                mgmt: (location.hash == '#mgmt'),
+                settings: (location.hash != '#mgmt')
+            };
+        }, 0);
+    };
+
+    $scope.popupInit = function() {
+        //defaults
+        $scope.ddInOn = ['in', 'on'];
+        $scope.ddRepeat = ['never', 'half hour', 'hour', 'day', 'work day', 'week', 'year'];
+        $scope.radioModel = 'in';
+        $scope.showWeeks = false;
+        var date = new Date();
+        // round to next 15 minutes
+        date.setMinutes(date.getMinutes() + 15 + (15 - (date.getMinutes() % 15)));
+
+        $scope.mytime = padTime(date.getHours()) + ":" + padTime(date.getMinutes());
+        SetDefaults();
+
+        console.log('Loading alerts...');
+        loadAlerts();
+
+        $scope.selectedRepeat = "Repeat Every";
+        $scope.onRepeatClicked = function(event) {
+            $scope.selectedRepeat = event;
         };
-    }, 0);
+    };
 
     $scope.isExpired = function(date){
         return date < getCurrentDate();
-    }
-
-    // called from the background page
-    window.refreshAlarms = loadAlerts;
+    };
 };

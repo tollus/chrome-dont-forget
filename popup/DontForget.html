@@ -15,7 +15,7 @@
     <script src="DontForget.js"></script>
 </head>
 <body>
-<div class="contentWrapper" ng-controller="DontForgetCtrl">
+<div class="contentWrapper" ng-controller="DontForgetCtrl" ng-init="popupInit()">
     <div id="content">
         <div class="center"><input id="reminderText" type="text" ng-model="reminderText" placeholder="Don't forget this!" style="width: 90%" autofocus></div>
         <div class="center">

@@ -1,8 +1,18 @@
 ;(function(scope, undefined){
+    'use strict';
 
+    chrome.runtime.onStartup.addListener(init);
+    chrome.runtime.onInstalled.addListener(init);
     chrome.runtime.onMessage.addListener(messageReceived);
 
     var syncProps = ['alarms', 'uuid', 'settings'];
+    var defaultSettings = {
+        snoozeTime: 10,
+        timeFormat: 'h:mm a',
+        dateFormat: 'MMM d, y',
+        notifType: 'notification', // acceptable: 'notification', 'popup', 'popupNotification', ''
+        notifAlarm: null // acceptable: [see Sounds folder]
+    };
 
     var msgFunctions = {
         'saveSettings': function(message, callback) {
@@ -107,6 +117,44 @@
         }
 
         return false;
+    }
+
+    // update settings value to defaults
+    function init() {
+        console.debug('settings init called');
+
+        AppSettings.get(function(settings) {
+            var updateSettings = false;
+            settings = settings.settings;
+
+            if (!settings) {
+                settings = defaultSettings;
+                updateSettings = true;
+            } else {
+                // did we add a new setting?
+                for (var x in defaultSettings) {
+                    if (defaultSettings.hasOwnProperty(x) && settings[x] === undefined) {
+                        updateSettings = true;
+                        settings = extend({}, defaultSettings, settings);
+                        break;
+                    }
+                }
+            }
+
+            if (updateSettings) {
+                console.log('default settings missing, updating: ', settings);
+                AppSettings.set({settings:settings}, function() {});
+            }
+        });
+    }
+
+    // http://stackoverflow.com/a/11197343
+    function extend(){
+        for(var i=1; i<arguments.length; i++)
+            for(var key in arguments[i])
+                if(arguments[i].hasOwnProperty(key))
+                    arguments[0][key] = arguments[i][key];
+        return arguments[0];
     }
 
 }(window));

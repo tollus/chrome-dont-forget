@@ -10,11 +10,6 @@
         'week': 60 * 24 * 7
         // month + year ignored because it's special ...
     };
-    var defaultSettings = {
-        snoozeTime: 10,
-        timeFormat: 'h:mm a',
-        dateFormat: 'MMM d, y'
-    };
 
     chrome.runtime.onStartup.addListener(init);
     chrome.runtime.onInstalled.addListener(init);
@@ -185,9 +180,6 @@
                             var snooze = duplicateAlarm(value, settings.uuid++);
                             snooze.date = now + snoozeTime;
                             delete snooze.repeat;
-                            if (snooze.originalStart) {
-                                delete snooze.originalStart;
-                            }
                             newalarms.push(snooze);
 
                             return toNextAlarm(value);
@@ -224,15 +216,6 @@
         }
     };
 
-    // http://stackoverflow.com/a/11197343
-    function extend(){
-        for(var i=1; i<arguments.length; i++)
-            for(var key in arguments[i])
-                if(arguments[i].hasOwnProperty(key))
-                    arguments[0][key] = arguments[i][key];
-        return arguments[0];
-    }
-
     function init() {
         console.debug('alarms init called');
 
@@ -267,20 +250,6 @@
                 }
             } else {
                 alarmsRemoved();
-            }
-
-            if (!settings.settings) {
-                settings.settings = defaultSettings;
-                updateSettings = true;
-            } else {
-                // did we add a new setting?
-                for (var x in defaultSettings) {
-                    if (defaultSettings.hasOwnProperty(x) && settings.settings[x] === undefined) {
-                        updateSettings = true;
-                        settings.settings = extend({}, defaultSettings, settings.settings);
-                        break;
-                    }
-                }
             }
 
             if (updateSettings) {
@@ -414,20 +383,32 @@
             AppSettings.set({firedAlertIDs: firedAlertIDs}, function() {
                 if (alertItems.length > 0) {
                     console.debug(alertItems);
-                    var opts = {
-                        type: "list",
-                        title: "Don't Forget!",
-                        message: "my message",
-                        iconUrl: "img/logo_alarm64.png",
-                        items: alertItems,
-                        buttons: [{iconUrl: 'img/snooze.png', title: "Snooze"}, {iconUrl: 'img/dismiss.png', title: "Dismiss"}]
-                    };
+                    var notifType = settings.settings.notifType;
+                    var useNotification = (notifType === 'notification' || notifType === 'popupNotification');
+                    var usePopup = (notifType === 'popup' || notifType === 'popupNotification');
 
-                    autoClosingNotification = true;
-                    chrome.notifications.clear("alerts", function() {
-                        autoClosingNotification = false;
-                        chrome.notifications.create("alerts", opts, function(){});
-                    });
+                    if (useNotification) {
+                        var opts = {
+                            type: "list",
+                            title: "Don't Forget!",
+                            message: "my message",
+                            iconUrl: "img/logo_alarm64.png",
+                            items: alertItems,
+                            buttons: [{iconUrl: 'img/snooze.png', title: "Snooze"}, {iconUrl: 'img/dismiss.png', title: "Dismiss"}]
+                        };
+
+                        autoClosingNotification = true;
+                        chrome.notifications.clear("alerts", function() {
+                            autoClosingNotification = false;
+                            chrome.notifications.create("alerts", opts, function(){});
+                        });
+                    }
+
+                    if (usePopup) {
+                        // TODO: check for tab already open
+                        var url = chrome.extension.getURL('../other/alarmmgmt.html#mgmt');
+                        chrome.tabs.create({url: url, active: true});
+                    }
                 }
             });
         });
@@ -476,18 +457,19 @@
 
     // move to next occurrence
     function toNextAlarm(alarm) {
-        if (!alarm.originalStart) {
-            alarm.originalStart = alarm.date;
-        }
-
         var newdate = new Date(alarm.date);
         var mins = repeatEnumMinutes[alarm.repeat];
 
         if (mins) {
             newdate.setMinutes(newdate.getMinutes() + mins);
+        } else if (alarm.repeat === 'work day') {
+            newdate.setDate(newdate.getDate() + 1);
+            while(newdate.getDay() === 0 || newdate.getDay() === 6) {
+                newdate.setDate(newdate.getDate() + 1);
+            }
         } else if (alarm.repeat === 'month') {
             newdate.setMonth(newdate.getMonth() + 1);
-        } else if (alarm.repeat === 'month') {
+        } else if (alarm.repeat === 'year') {
             newdate.setFullYear(newdate.getFullYear() + 1);
         } else {
             //TODO: Handle error for invalid enum?
