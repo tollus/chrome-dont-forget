@@ -216,28 +216,6 @@
 
             // return true to process callback async
             return true;
-        },
-
-        'saveSettings': function(message, callback) {
-            if (!message.settings) {
-                callback({error: 'Missing settings property.'});
-                return;
-            }
-
-            AppSettings.set({settings: message.settings}, function() {
-                callback({result:true});
-            });
-
-            // return true to process callback async
-            return true;
-        },
-        'getSettings': function(message, callback) {
-            AppSettings.get(function(settings) {
-                callback({settings: settings.settings});
-            });
-
-            // return true to process callback async
-            return true;
         }
     };
 
@@ -363,8 +341,6 @@
             return;
         }
 
-        console.debug( 'messageReceived action: ' + message.action + ' object: ', message);
-
         if (!(message !== null && message.action)) {
             // invalid message received
             callback({error: 'Invalid message received.'});
@@ -373,6 +349,7 @@
 
         var fn = msgFunctions[message.action];
         if (fn) {
+            console.debug( 'alarms.messageReceived action: ' + message.action + ' object: ', message);
             return fn.call(this, message, callback);
         }
 

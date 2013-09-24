@@ -1,8 +1,34 @@
 ;(function(scope, undefined){
 
+    chrome.runtime.onMessage.addListener(messageReceived);
+
     var syncProps = ['alarms', 'uuid'];
 
-    scope.AppSettings = {
+    var msgFunctions = {
+        'saveSettings': function(message, callback) {
+            if (!message.settings) {
+                callback({error: 'Missing settings property.'});
+                return;
+            }
+
+            AppSettings.set({settings: message.settings}, function() {
+                callback({result:true});
+            });
+
+            // return true to process callback async
+            return true;
+        },
+        'getSettings': function(message, callback) {
+            AppSettings.get(function(settings) {
+                callback({settings: settings.settings});
+            });
+
+            // return true to process callback async
+            return true;
+        }
+    };
+
+    var AppSettings = scope.AppSettings = {
         get: function(callback) {
             chrome.storage.local.get(function(settings) {
                 // TODO: check for chrome.runtime.error
@@ -61,5 +87,26 @@
             return true;
         }
     };
+
+    function messageReceived(message, sender, callback) {
+        if (sender.id !== chrome.runtime.id) {
+            // validate it's from our extension???
+            return;
+        }
+
+        if (!(message !== null && message.action)) {
+            // invalid message received
+            callback({error: 'Invalid message received.'});
+            return;
+        }
+
+        var fn = msgFunctions[message.action];
+        if (fn) {
+            console.debug( 'settings.messageReceived action: ' + message.action + ' object: ', message);
+            return fn.call(this, message, callback);
+        }
+
+        return false;
+    }
 
 }(window));
