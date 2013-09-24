@@ -221,28 +221,6 @@
 
             // return true to process callback async
             return true;
-        },
-
-        'saveSettings': function(message, callback) {
-            if (!message.settings) {
-                callback({error: 'Missing settings property.'});
-                return;
-            }
-
-            AppSettings.set({settings: message.settings}, function() {
-                callback({result:true});
-            });
-
-            // return true to process callback async
-            return true;
-        },
-        'getSettings': function(message, callback) {
-            AppSettings.get(function(settings) {
-                callback({settings: settings.settings});
-            });
-
-            // return true to process callback async
-            return true;
         }
     };
 
@@ -347,18 +325,19 @@
             return;
         }
         var expiredCt = 0;
+        var curDate = getCurrentDate();
 
         alarms.forEach(function(value, index){
-            if(value.date < getCurrentDate())
+            if(value.date < curDate)
                 expiredCt++;
         });
         if(expiredCt > 0){
             chrome.browserAction.setBadgeText({text: expiredCt.toString()});
-            chrome.browserAction.setIcon({path: 'images/logo128.png'});
+            chrome.browserAction.setIcon({path: 'img/logo128.png'});
             chrome.browserAction.setBadgeBackgroundColor({color:[255, 255, 255, 0]});
         }else{
             chrome.browserAction.setBadgeText({text: ''});
-            chrome.browserAction.setIcon({path: 'images/logo_BW128.png'});
+            chrome.browserAction.setIcon({path: 'img/logo_BW128.png'});
         }
 
         if (!alarmActive) {
@@ -370,7 +349,7 @@
     // when there are no alarms left, remove the timeout
     function alarmsRemoved() {
         chrome.browserAction.setBadgeText({text: ''});
-        chrome.browserAction.setIcon({path: 'images/logo_BW128.png'});
+        chrome.browserAction.setIcon({path: 'img/logo_BW128.png'});
 
         chrome.notifications.clear("alerts", function() {});
 
@@ -407,7 +386,7 @@
             return fn.call(this, message, callback);
         }
 
-        callback({error: 'Action ' + message.action + ' not implemented.'});
+        return false;
     }
 
     function alarmFired(alarm) {
@@ -440,9 +419,9 @@
                         type: "list",
                         title: "Don't Forget!",
                         message: "my message",
-                        iconUrl: "images/logo_alarm64.png",
+                        iconUrl: "img/logo_alarm64.png",
                         items: alertItems,
-                        buttons: [{iconUrl: 'images/snooze.png', title: "Snooze"}, {iconUrl: 'images/dismiss.png', title: "Dismiss"}]
+                        buttons: [{iconUrl: 'img/snooze.png', title: "Snooze"}, {iconUrl: 'img/dismiss.png', title: "Dismiss"}]
                     };
 
                     autoClosingNotification = true;
