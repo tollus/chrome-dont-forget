@@ -28,7 +28,7 @@
                     <div ng-hide="alerts.length">There are no reminders set to manage</div>
                 </div>
             </tab>
-            <tab heading="Settings" select="loadSettings()">
+            <tab heading="Settings" select="loadSettings()" active="activeTab.settings">
                 <form class="form-horizontal">
                     <div class="control-group">
                         <label class="control-label" for="settings.snoozeTime">Snooze Time</label>
