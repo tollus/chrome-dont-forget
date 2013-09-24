@@ -271,6 +271,10 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
         };
     }, 0);
 
+    $scope.isExpired = function(date){
+        return date < getCurrentDate();
+    }
+
     // called from the background page
     window.refreshAlarms = loadAlerts;
 };

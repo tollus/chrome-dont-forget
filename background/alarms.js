@@ -221,6 +221,28 @@
 
             // return true to process callback async
             return true;
+        },
+
+        'saveSettings': function(message, callback) {
+            if (!message.settings) {
+                callback({error: 'Missing settings property.'});
+                return;
+            }
+
+            AppSettings.set({settings: message.settings}, function() {
+                callback({result:true});
+            });
+
+            // return true to process callback async
+            return true;
+        },
+        'getSettings': function(message, callback) {
+            AppSettings.get(function(settings) {
+                callback({settings: settings.settings});
+            });
+
+            // return true to process callback async
+            return true;
         }
     };
 
@@ -324,12 +346,22 @@
             alarmsRemoved();
             return;
         }
+        var expiredCt = 0;
 
-        chrome.browserAction.setBadgeText({text: alarms.length.toString()});
+        alarms.forEach(function(value, index){
+            if(value.date < getCurrentDate())
+                expiredCt++;
+        });
+        if(expiredCt > 0){
+            chrome.browserAction.setBadgeText({text: expiredCt.toString()});
+            chrome.browserAction.setIcon({path: 'images/logo128.png'});
+            chrome.browserAction.setBadgeBackgroundColor({color:[255, 255, 255, 0]});
+        }else{
+            chrome.browserAction.setBadgeText({text: ''});
+            chrome.browserAction.setIcon({path: 'images/logo_BW128.png'});
+        }
 
         if (!alarmActive) {
-            chrome.browserAction.setIcon({path: 'img/logo128.png'});
-            chrome.browserAction.setBadgeBackgroundColor({color:[255, 255, 255, 0]});
             chrome.alarms.create("alerts", {periodInMinutes: 1});
             alarmActive = true;
         }
@@ -338,7 +370,7 @@
     // when there are no alarms left, remove the timeout
     function alarmsRemoved() {
         chrome.browserAction.setBadgeText({text: ''});
-        chrome.browserAction.setIcon({path: 'img/logo_BW128.png'});
+        chrome.browserAction.setIcon({path: 'images/logo_BW128.png'});
 
         chrome.notifications.clear("alerts", function() {});
 
@@ -362,6 +394,8 @@
             return;
         }
 
+        console.debug( 'messageReceived action: ' + message.action + ' object: ', message);
+
         if (!(message !== null && message.action)) {
             // invalid message received
             callback({error: 'Invalid message received.'});
@@ -370,11 +404,10 @@
 
         var fn = msgFunctions[message.action];
         if (fn) {
-            console.debug( 'alarms.messageReceived action: ' + message.action + ' object: ', message);
             return fn.call(this, message, callback);
         }
 
-        return false;
+        callback({error: 'Action ' + message.action + ' not implemented.'});
     }
 
     function alarmFired(alarm) {
@@ -407,9 +440,9 @@
                         type: "list",
                         title: "Don't Forget!",
                         message: "my message",
-                        iconUrl: "img/logo_alarm64.png",
+                        iconUrl: "images/logo_alarm64.png",
                         items: alertItems,
-                        buttons: [{iconUrl: 'img/snooze.png', title: "Snooze"}, {iconUrl: 'img/dismiss.png', title: "Dismiss"}]
+                        buttons: [{iconUrl: 'images/snooze.png', title: "Snooze"}, {iconUrl: 'images/dismiss.png', title: "Dismiss"}]
                     };
 
                     autoClosingNotification = true;
