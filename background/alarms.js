@@ -154,6 +154,60 @@
             // return true to process callback async
             return true;
         },
+        'snoozeAlarm': function(message, callback) {
+            if (message.id === undefined) {
+                console.error('Missing id parameter in snoozeAlarm call.');
+                callback({error: 'Missing id parameter.'});
+                return;
+            }
+            if (!message.id.length) {
+                message.id = [message.id];
+            }
+
+            AppSettings.get(function(settings) {
+                var newalarms = [];
+                var snoozeTime = (settings.settings.snoozeTime || 10) * 60 * 1000;
+
+                settings.alarms = settings.alarms.map(function(value,index) {
+                    if (message.id.indexOf(value.id) > -1) {
+                        var now = getCurrentDate();
+
+                        if (value.repeat) {
+                            // create a new alarm for the snooze, and
+                            //  go to the next occurrence for this alarm
+                            //  this way we don't lose the original start time
+
+                            var snooze = duplicateAlarm(value, settings.uuid++);
+                            snooze.date = now + snoozeTime;
+                            delete snooze.repeat;
+                            if (snooze.originalStart) {
+                                delete snooze.originalStart;
+                            }
+                            newalarms.push(snooze);
+
+                            return toNextAlarm(value);
+                        } else {
+                            value.date = now + snoozeTime;
+                        }
+                    }
+                    return value;
+                });
+
+                if (newalarms.length > 0) {
+                    settings.alarms = settings.alarms.concat(newalarms);
+                }
+
+                settings.alarms.sort(function(a,b){return a.date - b.date });
+
+                AppSettings.set(settings, function() {
+                    // tell popup to refresh if it's open
+                    refreshPopup();
+                });
+            });
+
+            // return true to process callback async
+            return true;
+        },
         'getAlarms': function(message, callback) {
             AppSettings.get(function(settings) {
                 settings.alarms.sort(function(a,b){return a.date - b.date });
@@ -163,6 +217,7 @@
             // return true to process callback async
             return true;
         },
+
         'saveSettings': function(message, callback) {
             if (!message.settings) {
                 callback({error: 'Missing settings property.'});
@@ -372,7 +427,15 @@
     function buttonClicked(notificationID, buttonIndex) {
         if (buttonIndex == 0) {
             console.log("snooze pressed");
-            snoozeAlert(notificationID);
+            AppSettings.get(function(settings) {
+                msgFunctions['snoozeAlarm'].call(this, {
+                    id: settings.firedAlertIDs
+                }, function(response) {
+                    if (response.error) {
+                        console.error('snoozeAlarm failed: ' + response.error)
+                    }
+                });
+            });
         } else {
             console.log("dismiss pressed");
             AppSettings.get(function(settings) {
@@ -387,49 +450,6 @@
         }
 
         chrome.notifications.clear("alerts", function() {});
-    }
-
-    function snoozeAlert()   {
-        AppSettings.get(function(settings) {
-            var newalarms = [];
-            var snoozeTime = (settings.settings.snoozeTime || 10) * 60 * 1000;
-
-            settings.alarms = settings.alarms.map(function(value,index) {
-                if (settings.firedAlertIDs.indexOf(value.id) > -1) {
-                    var now = getCurrentDate();
-
-                    if (value.repeat) {
-                        // create a new alarm for the snooze, and
-                        //  go to the next occurrence for this alarm
-                        //  this way we don't lose the original start time
-
-                        var snooze = duplicateAlarm(value, settings.uuid++);
-                        snooze.date = now + snoozeTime;
-                        delete snooze.repeat;
-                        if (snooze.originalStart) {
-                            delete snooze.originalStart;
-                        }
-                        newalarms.push(snooze);
-
-                        return toNextAlarm(value);
-                    } else {
-                        value.date = now + snoozeTime;
-                    }
-                }
-                return value;
-            });
-
-            if (newalarms.length > 0) {
-                settings.alarms = settings.alarms.concat(newalarms);
-            }
-
-            settings.alarms.sort(function(a,b){return a.date - b.date });
-
-            AppSettings.set(settings, function() {
-                // tell popup to refresh if it's open
-                refreshPopup();
-            });
-        });
     }
 
     // returns the current date as number (local timezone stored as UTC with 0 seconds)

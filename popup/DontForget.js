@@ -196,7 +196,22 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
             id: id
         }, function(response){
             if (response.error) {
-                console.error('deleteAlarm failed: ' + response.error)
+                console.error('deleteAlarm failed: ' + response.error);
+            } else if (response.alarms) {
+                $scope.alerts = generateAlerts(response.alarms);
+                $scope.$digest();
+            }
+        });
+    };
+
+    $scope.SnoozeAlert = function (id){
+        chrome.runtime.sendMessage({
+            action: 'snoozeAlarm',
+            fromPopup: false,
+            id: id
+        }, function(response){
+            if (response.error) {
+                console.error('snoozeAlarm failed: ' + response.error);
             } else if (response.alarms) {
                 $scope.alerts = generateAlerts(response.alarms);
                 $scope.$digest();
