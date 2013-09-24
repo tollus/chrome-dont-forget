@@ -44,6 +44,9 @@ body{
     vertical-align: middle;
 }
 
-.trashcan{
-    background-image: url(chrome://resources/images/trash.png);
+.snooze{
+    /*background-image: url(../images/snooze.png);  */
+    height: 16px;
+    width: 16px;
+    vertical-align: middle;
 }
