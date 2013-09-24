@@ -209,7 +209,7 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
     };
 
     $scope.createTab = function (){
-        chrome.tabs.create({url: '../other/alarmmgmt.html', active: true});
+        chrome.tabs.create({url: '../other/alarmmgmt.html#mgmt', active: true});
     };
 
     $scope.SaveSettings = function() {
@@ -236,6 +236,8 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
             $scope.$digest();
         });
     };
+
+    $scope.mgmtTabActive = (location.hash == '#mgmt');
 
     // called from the background page
     window.refreshAlarms = loadAlerts;

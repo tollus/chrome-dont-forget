@@ -16,14 +16,6 @@
 <body>
     <div id="mainContainer" class="contentWrapper" style="margin: 20px;" ng-controller="DontForgetCtrl">
         <tabset>
-            <tab heading="Reminder Mgmt">
-                <div class="center" style="margin: 5px 0px 0px 0px; height: 500px">
-                    <div ng-repeat="alert in alerts" ng-class="getAlertClass(alert.date)" type="alert.type" close="closeAlert($index)">
-                        <span class="{{alert.repeat}}">&nbsp;</span>{{alert.msg}}  <span class="pull-right" tooltip="{{showTooltip(alert.repeat)}}"><a href="" ng-Click="DeleteAlert({{alert.id}})"><i class="icon-trash"></i></a></span>
-                    </div>
-                    <div ng-hide="alerts.length">There are no reminders set to manage</div>
-                </div>
-            </tab>
             <tab heading="Settings" select="loadSettings()">
             	<form class="form-horizontal">
             		<div class="control-group">
@@ -35,11 +27,19 @@
     	        	</div>
 
 	            	<button class="btn btn-primary" ng-click="SaveSettings()">Save</button>
-	            	<div id="settings-saved-alert" class="alert alert-success hide">
-	            		<a class="close" data-dismiss="alert" href="#">&times;</a>
+	            	<div id="settings-saved-alert" class="label label-success hide" style="margin-top: 5px;">
 						Settings have been saved.
 	            	</div>
             	</form>
+            </tab>
+            <tab heading="Reminder Mgmt" active="mgmtTabActive">
+                <div class="center" style="margin: 5px 0px 0px 0px; height: 500px">
+                    <div ng-repeat="alert in alerts" ng-class="getAlertClass(alert.date)" type="alert.type" close="closeAlert($index)">
+                        <span class="{{alert.repeat}}">&nbsp;</span>{{alert.msg}}
+                        <span class="pull-right" tooltip="{{showTooltip(alert.repeat)}}"><a href="" ng-Click="DeleteAlert({{alert.id}})"><i class="icon-trash"></i></a></span>
+                    </div>
+                    <div ng-hide="alerts.length">There are no reminders set to manage</div>
+                </div>
             </tab>
         </tabset>
     </div>
