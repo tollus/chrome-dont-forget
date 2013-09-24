@@ -254,6 +254,10 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
 
     $scope.mgmtTabActive = (location.hash == '#mgmt');
 
+    $scope.isExpired = function(date){
+        return date < getCurrentDate();
+    }
+
     // called from the background page
     window.refreshAlarms = loadAlerts;
 };

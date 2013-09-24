@@ -325,12 +325,22 @@
             alarmsRemoved();
             return;
         }
+        var expiredCt = 0;
 
-        chrome.browserAction.setBadgeText({text: alarms.length.toString()});
-
-        if (!alarmActive) {
+        alarms.forEach(function(value, index){
+            if(value.date < getCurrentDate())
+                expiredCt++;
+        });
+        if(expiredCt > 0){
+            chrome.browserAction.setBadgeText({text: expiredCt.toString()});
             chrome.browserAction.setIcon({path: 'images/logo128.png'});
             chrome.browserAction.setBadgeBackgroundColor({color:[255, 255, 255, 0]});
+        }else{
+            chrome.browserAction.setBadgeText({text: ''});
+            chrome.browserAction.setIcon({path: 'images/logo_BW128.png'});
+        }
+
+        if (!alarmActive) {
             chrome.alarms.create("alerts", {periodInMinutes: 1});
             alarmActive = true;
         }
