@@ -307,7 +307,7 @@
         chrome.browserAction.setBadgeText({text: alarms.length.toString()});
 
         if (!alarmActive) {
-            chrome.browserAction.setIcon({path: 'images/logo128.png'});
+            chrome.browserAction.setIcon({path: 'img/logo128.png'});
             chrome.browserAction.setBadgeBackgroundColor({color:[255, 255, 255, 0]});
             chrome.alarms.create("alerts", {periodInMinutes: 1});
             alarmActive = true;
@@ -317,7 +317,7 @@
     // when there are no alarms left, remove the timeout
     function alarmsRemoved() {
         chrome.browserAction.setBadgeText({text: ''});
-        chrome.browserAction.setIcon({path: 'images/logo_BW128.png'});
+        chrome.browserAction.setIcon({path: 'img/logo_BW128.png'});
 
         chrome.notifications.clear("alerts", function() {});
 
@@ -386,9 +386,9 @@
                         type: "list",
                         title: "Don't Forget!",
                         message: "my message",
-                        iconUrl: "images/logo_alarm64.png",
+                        iconUrl: "img/logo_alarm64.png",
                         items: alertItems,
-                        buttons: [{iconUrl: 'images/snooze.png', title: "Snooze"}, {iconUrl: 'images/dismiss.png', title: "Dismiss"}]
+                        buttons: [{iconUrl: 'img/snooze.png', title: "Snooze"}, {iconUrl: 'img/dismiss.png', title: "Dismiss"}]
                     };
 
                     autoClosingNotification = true;

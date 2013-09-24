@@ -21,7 +21,7 @@
                     <div ng-repeat="alert in alerts" ng-class="getAlertClass(alert.date)" type="alert.type" close="closeAlert($index)">
                         <span class="{{alert.repeat}}">&nbsp;</span>{{alert.msg}}
                         <span class="pull-right">
-                        	<span><a href="" ng-click="SnoozeAlert({{alert.id}})"><img src="../images/snooze.png" class="snooze"></a></span>
+                        	<span><a href="" ng-click="SnoozeAlert({{alert.id}})"><img src="../img/snooze.png" class="snooze"></a></span>
                         	<span tooltip="{{showTooltip(alert.repeat)}}"><a href="" ng-Click="DeleteAlert({{alert.id}})"><i class="icon-trash"></i></a></span>
                     	</span>
                     </div>

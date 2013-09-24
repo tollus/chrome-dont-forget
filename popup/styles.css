@@ -36,7 +36,7 @@ body{
 }
 
 .repeat{
-    background-image: url(../images/Loop.png);
+    background-image: url(../img/Loop.png);
     width: 16px;
     height: 16px;
     margin-right: 3px;
@@ -45,7 +45,7 @@ body{
 }
 
 .snooze{
-    /*background-image: url(../images/snooze.png);  */
+    /*background-image: url(../img/snooze.png);  */
     height: 16px;
     width: 16px;
     vertical-align: middle;
