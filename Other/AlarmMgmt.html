@@ -29,7 +29,7 @@
                 </div>
             </tab>
             <tab heading="Settings" select="loadSettings()" active="activeTab.settings">
-                <form class="form-horizontal">
+                <form class="form-horizontal" style="padding-bottom: 50px">
                     <div class="control-group">
                         <label class="control-label" for="settings.snoozeTime">Snooze Time</label>
                         <div class="controls">
@@ -41,7 +41,7 @@
                         <label class="control-label" for="settings.timeFormat">Time Format</label>
                         <div class="controls">
                             <span class="dropdown" id="settings.timeFormat">
-                               <a class="dropdown-toggle btn" role="button" ng-model="settings.timeFormat" data-toggle="dropdown" style="text-decoration: none" >{{selectedTimeFormat}}<b class="caret"></b></a>
+                               <a class="dropdown-toggle btn" role="button" ng-model="settings.timeFormat" data-toggle="dropdown" style="text-decoration: none" >{{settings.timeFormat}}<b class="caret"></b></a>
                                 <ul class="dropdown-menu" role="menu">
                                     <li ng-repeat="item in ddTimeFormat">
                                         <a ng-click="onTimeFormatClicked('{{item}}')">{{item}}</a>
@@ -55,7 +55,7 @@
                         <label class="control-label" for="settings.dateFormat">Date Format</label>
                         <div class="controls" id="settings.dateFormat">
                             <span class="dropdown" >
-                               <a class="dropdown-toggle btn" role="button" ng-model="selectedDateFormat" data-toggle="dropdown" style="text-decoration: none" >{{selectedDateFormat}}<b class="caret"></b></a>
+                               <a class="dropdown-toggle btn" role="button" ng-model="settings.dateFormat" data-toggle="dropdown" style="text-decoration: none" >{{settings.dateFormat}}<b class="caret"></b></a>
                                 <ul class="dropdown-menu" role="menu">
                                     <li ng-repeat="item in ddDateFormat">
                                         <a ng-click="onDateFormatClicked('{{item}}')">{{item}}</a>
@@ -83,7 +83,7 @@
                         <label class="control-label">Notification Sound</label>
                         <div class="controls">
                             <span class="dropdown" >
-                               <a class="dropdown-toggle btn" role="button" ng-model="selectedReminderSound" data-toggle="dropdown" style="text-decoration: none" >{{selectedReminderSound}}<b class="caret"></b></a>
+                               <a class="dropdown-toggle btn" role="button" ng-model="settings.notifAlarm" data-toggle="dropdown" style="text-decoration: none" >{{settings.notifAlarm}}<b class="caret"></b></a>
                                 <ul class="dropdown-menu" role="menu">
                                     <li ng-repeat="item in ddReminderSound">
                                         <a ng-click="onSoundClicked('{{item}}')">{{item}}</a>

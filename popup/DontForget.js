@@ -6,12 +6,29 @@ angular.module('DontForget', ['ui.bootstrap']);
 
 var DontForgetCtrl = function ($scope, $timeout, $filter)
 {
-    var _settings = {};
-
     $scope.alerts = [];
+    $scope.settings = {};
 
-    $scope.settings = {
-        snoozeTime: 10
+    var settings_lookup = {
+        'timeFormat': [
+            {value: 'h:mm a', display: '4:05 pm'},
+            {value: 'HH:mm', display: '16:05'}
+        ],
+        'dateFormat': [
+            {value: 'MMM d, y', display: 'Sep 5, 2013'},
+            {value: 'y-MM-dd', display: '2013-09-05'}
+        ],
+        'notifType': [
+            {value: 'notification', display: 'Desktop Notification'},
+            {value: 'popup', display: 'Open a tab'},
+            {value: 'popupNotification', display: 'Both'},
+            {value: '', display: 'Nothing'}
+        ],
+        'notifAlarm': [
+            {value: 'Gentle_Roll', display: 'Gentle Roll'},
+            {value: 'Picked', display: 'Picked'},
+            {value: '', display: 'None'}
+        ]
     };
 
     //datepicker
@@ -115,7 +132,7 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
             action: 'getSettings'
         }, function(settings) {
             // store settings locally
-            _settings = settings.settings;
+            $scope.settings = $.extend({}, settings.settings);
 
             chrome.runtime.sendMessage({
                 action: 'getAlarms'
@@ -156,8 +173,8 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
     function friendlyDTFormat(adjustedDT){
         var now = new Date();
         var dateString = '';
-        var tf = _settings.timeFormat || 'h:mm a';
-        var df = _settings.dateFormat || 'MMM d, y';
+        var tf = $scope.settings.timeFormat || 'h:mm a';
+        var df = $scope.settings.dateFormat || 'MMM d, y';
 
         if (adjustedDT.getDate() == now.getDate()) {
             dateString = "'Today at' " + tf;
@@ -221,9 +238,15 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
     };
 
     $scope.SaveSettings = function() {
+        var settings = {};
+
+        $.each($scope.settings, function(key, value) {
+            settings[key] = lookupSettings(key, 'value', 'display', value);
+        });
+
         chrome.runtime.sendMessage({
             action: 'saveSettings',
-            settings: $scope.settings
+            settings: settings
         }, function(response) {
             if (response.error) {
                 console.error('saveSettings failed: ' + response.error)
@@ -236,37 +259,72 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
         });
     };
 
-    $scope.loadSettings = function() {
+    $scope.loadSettings = function(callback) {
         chrome.runtime.sendMessage({
             action: 'getSettings'
         }, function(response) {
-            $scope.settings = $.extend({}, response.settings);
+            var settings = {};
+
+            $.each(response.settings, function(key, value) {
+                settings[key] = lookupSettings(key, 'display', 'value', value);
+            });
+
+            $scope.settings = settings;
+
             $scope.$digest();
+
+            if(callback) {
+                callback();
+            }
         });
     };
+
+    function lookupSettings(key, returnProperty, lookupProperty, value) {
+        var result = null;
+
+        if (!settings_lookup[key]) {
+            // if no lookup, return the value
+            return value;
+        }
+        value = value || ''; // convert nulls to blank
+
+        settings_lookup[key].every(function (lookup) {
+            if(value === lookup[lookupProperty]) {
+                result = lookup[returnProperty];
+                // break
+                return false;
+            }
+            return true;
+        });
+
+        return result;
+    }
+
+    function getLookupSettings(key, returnProperty) {
+        returnProperty = returnProperty || 'display'
+        return $.map(settings_lookup[key], function(value) {
+            return value[returnProperty];
+        });
+    }
 
     $scope.mgmtInit = function() {
         console.log('mgmtInit');
 
-        $scope.ddTimeFormat = ['4:05', '16:05'];
-        $scope.selectedTimeFormat = '4:05';
-        $scope.onTimeFormatClicked = function(event) {
-            $scope.selectedTimeFormat = event;
+        $scope.ddTimeFormat = getLookupSettings('timeFormat');
+        $scope.onTimeFormatClicked = function(value) {
+            $scope.settings.timeFormat = value;
         };
-        $scope.ddDateFormat = ['Sep 5, 2013', '2013-09-05'];
-        $scope.selectedDateFormat = 'Sep 5, 2013';
-        $scope.onDateFormatClicked = function(event) {
-            $scope.selectedDateFormat = event;
+        $scope.ddDateFormat = getLookupSettings('dateFormat');
+        $scope.onDateFormatClicked = function(value) {
+            $scope.settings.dateFormat = value;
         };
-        $scope.ddNotifFormat = ['Desktop Notification', 'Open a tab', 'Both', 'Nothing'];
-        $scope.selectedNotifFormat = 'Desktop Notification';
-        $scope.onNotifFormatClicked = function(event) {
-            $scope.selectedNotifFormat = event;
+        $scope.ddNotifFormat = getLookupSettings('notifType');
+        $scope.onNotifFormatClicked = function(value) {
+            $scope.settings.notifType = value;
         };
-        $scope.ddReminderSound = ['Gentle Roll', 'Picked'];
-        $scope.selectedReminderSound = 'Gentle Roll';
-        $scope.onSoundClicked = function(event){
-            $scope.selectedReminderSound = event;
+        $scope.ddReminderSound = getLookupSettings('notifAlarm');
+        $scope.onSoundClicked = function(value){
+            $scope.settings.notifAlarm = value;
         };
 
         $timeout(function(){
