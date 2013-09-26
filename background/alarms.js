@@ -364,6 +364,24 @@
         }
     }
 
+    function friendlyDTFormat(adjustedDT){
+        var now = new Date();
+        var dateString = '';
+        var tf = $scope.settings.timeFormat || 'h:mm a';
+        var df = $scope.settings.dateFormat || 'MMM d, y';
+
+        if (adjustedDT.getDate() == now.getDate()) {
+            dateString = "'Today at' " + tf;
+        } else if (adjustedDT.getDate() == now.getDate()+1) {
+            dateString = "'Tomorrow at' " + tf;
+        } else if (adjustedDT.getDate() == now.getDate()-1) {
+            dateString = "'Yesterday at' " + tf;
+        } else {
+            dateString = df + ' ' + tf;
+        }
+        return dateString;
+    }
+
     function notify() {
         var alertItems = [];
         var now = new Date(Date.now());
@@ -375,7 +393,11 @@
 
             settings.alarms.forEach(function(value, index) {
                 if (value.date <= currentDT) {
-                    alertItems.push({ title: '', message: value.message});
+                    var adjustedDT = new Date(value.date);
+                    // force to local timezone
+                    adjustedDT.setMinutes(adjustedDT.getMinutes() + adjustedDT.getTimezoneOffset());
+
+                    alertItems.push({ title: '', message: value.message, contextMessage: friendlyDTFormat(adjustedDT)});
                     firedAlertIDs.push(value.id);
                 }
             });
