@@ -50,3 +50,7 @@ body{
     width: 16px;
     vertical-align: middle;
 }
+
+.dropdown-menu>li>a {
+	cursor: pointer;
+}
