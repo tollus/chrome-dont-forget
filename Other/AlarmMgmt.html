@@ -37,36 +37,59 @@
                             (minutes)
                         </div>
                     </div>
-
                     <div class="control-group">
                         <label class="control-label" for="settings.timeFormat">Time Format</label>
                         <div class="controls">
-                            <select id="settings.timeFormat" ng-model="settings.timeFormat">
-                                <option value="h:mm a">4:05 pm</option>
-                                <option value="HH:mm">16:05</option>
-                            </select>
+                            <span class="dropdown" id="settings.timeFormat">
+                               <a class="dropdown-toggle btn" role="button" ng-model="settings.timeFormat" data-toggle="dropdown" style="text-decoration: none" >{{selectedTimeFormat}}<b class="caret"></b></a>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li ng-repeat="item in ddTimeFormat">
+                                        <a ng-click="onTimeFormatClicked('{{item}}')">{{item}}</a>
+                                    </li>
+                                </ul>
+                            </span>
                         </div>
                     </div>
 
                     <div class="control-group">
                         <label class="control-label" for="settings.dateFormat">Date Format</label>
-                        <div class="controls">
-                            <select id="settings.dateFormat" ng-model="settings.dateFormat">
-                                <option value="MMM d, y">Sep 5, 2013</option>
-                                <option value="y-MM-dd">2013-09-05</option>
-                            </select>
+                        <div class="controls" id="settings.dateFormat">
+                            <span class="dropdown" >
+                               <a class="dropdown-toggle btn" role="button" ng-model="selectedDateFormat" data-toggle="dropdown" style="text-decoration: none" >{{selectedDateFormat}}<b class="caret"></b></a>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li ng-repeat="item in ddDateFormat">
+                                        <a ng-click="onDateFormatClicked('{{item}}')">{{item}}</a>
+                                    </li>
+                                </ul>
+                            </span>
                         </div>
                     </div>
 
                     <div class="control-group">
                         <label class="control-label" for="settings.notifType">Notification Type</label>
+                        <div class="controls" id="settings.notifType">
+                            <span class="dropdown" >
+                               <a class="dropdown-toggle btn" role="button" ng-model="settings.notifType" data-toggle="dropdown" style="text-decoration: none" >{{settings.notifType}}<b class="caret"></b></a>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li ng-repeat="item in ddNotifFormat">
+                                        <a ng-click="onNotifFormatClicked('{{item}}')">{{item}}</a>
+                                    </li>
+                                </ul>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Notification Sound</label>
                         <div class="controls">
-                            <select id="settings.notifType" ng-model="settings.notifType">
-                                <option value="notification">Show a desktop notification</option>
-                                <option value="popup">Open a tab</option>
-                                <option value="popupNotification">Both</option>
-                                <option value="">Neither</option>
-                            </select>
+                            <span class="dropdown" >
+                               <a class="dropdown-toggle btn" role="button" ng-model="selectedReminderSound" data-toggle="dropdown" style="text-decoration: none" >{{selectedReminderSound}}<b class="caret"></b></a>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li ng-repeat="item in ddReminderSound">
+                                        <a ng-click="onSoundClicked('{{item}}')">{{item}}</a>
+                                    </li>
+                                </ul>
+                            </span>
                         </div>
                     </div>
 

@@ -387,14 +387,28 @@
                     var useNotification = (notifType === 'notification' || notifType === 'popupNotification');
                     var usePopup = (notifType === 'popup' || notifType === 'popupNotification');
 
+                    if(settings.settings.notifAlarm != '')
+                    {
+                        var audio = new Audio();
+                        audio.src = chrome.extension.getURL('../sounds/' + settings.settings.notifAlarm + '.mp3');
+                        audio.load();
+                        audio.play();
+                    }
                     if (useNotification) {
+                        var buttonOptions = '';
+                        if(alertItems.length == 1)
+                        {
+                            buttonOptions = [{iconUrl: 'img/snooze.png', title: 'Snooze'}, {iconUrl: 'img/dismiss.png', title: 'Dismiss'}];
+                        }else{
+                            buttonOptions = [{iconUrl: 'img/list.png', title: 'Manage'}];
+                        }
                         var opts = {
                             type: "list",
                             title: "Don't Forget!",
                             message: "my message",
                             iconUrl: "img/logo_alarm64.png",
                             items: alertItems,
-                            buttons: [{iconUrl: 'img/snooze.png', title: "Snooze"}, {iconUrl: 'img/dismiss.png', title: "Dismiss"}]
+                            buttons: buttonOptions
                         };
 
                         autoClosingNotification = true;
@@ -419,13 +433,18 @@
         if (buttonIndex == 0) {
             console.log("snooze pressed");
             AppSettings.get(function(settings) {
-                msgFunctions['snoozeAlarm'].call(this, {
-                    id: settings.firedAlertIDs
-                }, function(response) {
-                    if (response.error) {
-                        console.error('snoozeAlarm failed: ' + response.error)
-                    }
-                });
+                if(settings.firedAlertIDs.length ==1){
+                    msgFunctions['snoozeAlarm'].call(this, {
+                        id: settings.firedAlertIDs
+                    }, function(response) {
+                        if (response.error) {
+                            console.error('snoozeAlarm failed: ' + response.error)
+                        }
+                    });
+                }else{
+                    var url = chrome.extension.getURL('../other/alarmmgmt.html#mgmt');
+                    chrome.tabs.create({url: url, active: true});
+                }
             });
         } else {
             console.log("dismiss pressed");

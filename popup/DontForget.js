@@ -248,6 +248,27 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
     $scope.mgmtInit = function() {
         console.log('mgmtInit');
 
+        $scope.ddTimeFormat = ['4:05', '16:05'];
+        $scope.selectedTimeFormat = '4:05';
+        $scope.onTimeFormatClicked = function(event) {
+            $scope.selectedTimeFormat = event;
+        };
+        $scope.ddDateFormat = ['Sep 5, 2013', '2013-09-05'];
+        $scope.selectedDateFormat = 'Sep 5, 2013';
+        $scope.onDateFormatClicked = function(event) {
+            $scope.selectedDateFormat = event;
+        };
+        $scope.ddNotifFormat = ['Desktop Notification', 'Open a tab', 'Both', 'Nothing'];
+        $scope.selectedNotifFormat = 'Desktop Notification';
+        $scope.onNotifFormatClicked = function(event) {
+            $scope.selectedNotifFormat = event;
+        };
+        $scope.ddReminderSound = ['Gentle Roll', 'Picked'];
+        $scope.selectedReminderSound = 'Gentle Roll';
+        $scope.onSoundClicked = function(event){
+            $scope.selectedReminderSound = event;
+        };
+
         $timeout(function(){
             $scope.activeTab = {
                 mgmt: (location.hash == '#mgmt'),
