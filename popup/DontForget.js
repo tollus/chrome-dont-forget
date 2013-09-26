@@ -341,8 +341,8 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
 
         $timeout(function(){
             $scope.activeTab = {
-                mgmt: (location.hash == '#mgmt'),
-                settings: (location.hash != '#mgmt')
+                mgmt: (location.hash == '#mgmt' || location.hash == '#/mgmt'),
+                settings: (location.hash != '#mgmt' && location.hash != '#/mgmt')
             };
         }, 0);
     };

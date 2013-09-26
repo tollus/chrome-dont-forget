@@ -11,7 +11,7 @@
         timeFormat: 'h:mm a',
         dateFormat: 'MMM d, y',
         notifType: 'notification', // acceptable: 'notification', 'popup', 'popupNotification', ''
-        notifAlarm: 'Gentle Roll' // acceptable: [see Sounds folder]
+        notifAlarm: 'Gentle_Roll' // acceptable: [see Sounds folder]
     };
 
     var msgFunctions = {
