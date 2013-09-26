@@ -1,6 +1,8 @@
 ;(function(AppSettings, undefined) {
     "use strict";
 
+    var alarmNotif;
+
     var alarmActive;
     var autoClosingNotification;
     var repeatEnumMinutes = {
@@ -219,6 +221,8 @@
     function init() {
         console.debug('alarms init called');
 
+        alarmNotif = new Audio();
+
         // check settings to update badge count
         AppSettings.get(function(settings) {
             var updateSettings = false;
@@ -254,7 +258,13 @@
 
             if (updateSettings) {
                 console.log('initialized settings: ', settings);
-                AppSettings.set(settings, function() {});
+                AppSettings.set(settings, function() {
+                    // force a notify in case alarms already expired
+                    notify();
+                });
+            } else {
+                // force a notify in case alarms already expired
+                notify();
             }
         });
     }
@@ -266,6 +276,11 @@
 
                 alarmsCreated(changes.alarms.newValue);
                 refreshPopup();
+            }
+            if (changes.settings) {
+                if (changes.settings.newValue.notifAlarm && changes.settings.newValue.notifAlarm != '') {
+                    alarmNotif.src = chrome.extension.getURL('../sounds/' + changes.settings.newValue.notifAlarm + '.mp3');
+                }
             }
         }
     }
@@ -302,11 +317,11 @@
         });
         if(expiredCt > 0){
             chrome.browserAction.setBadgeText({text: expiredCt.toString()});
-            chrome.browserAction.setIcon({path: 'img/logo128.png'});
+            chrome.browserAction.setIcon({path: '../img/logo128.png'});
             chrome.browserAction.setBadgeBackgroundColor({color:[255, 255, 255, 0]});
         }else{
             chrome.browserAction.setBadgeText({text: ''});
-            chrome.browserAction.setIcon({path: 'img/logo_BW128.png'});
+            chrome.browserAction.setIcon({path: '../img/logo_BW128.png'});
         }
 
         if (!alarmActive) {
@@ -318,7 +333,7 @@
     // when there are no alarms left, remove the timeout
     function alarmsRemoved() {
         chrome.browserAction.setBadgeText({text: ''});
-        chrome.browserAction.setIcon({path: 'img/logo_BW128.png'});
+        chrome.browserAction.setIcon({path: '../img/logo_BW128.png'});
 
         chrome.notifications.clear("alerts", function() {});
 
@@ -387,26 +402,27 @@
                     var useNotification = (notifType === 'notification' || notifType === 'popupNotification');
                     var usePopup = (notifType === 'popup' || notifType === 'popupNotification');
 
-                    if(settings.settings.notifAlarm != '')
-                    {
-                        var audio = new Audio();
-                        audio.src = chrome.extension.getURL('../sounds/' + settings.settings.notifAlarm + '.mp3');
-                        audio.load();
-                        audio.play();
+                    if (settings.settings.notifAlarm != '') {
+                        var filename = settings.settings.notifAlarm;
+                        if (alarmNotif.src != chrome.extension.getURL('../sounds/' + filename + '.mp3')) {
+                            alarmNotif.src = chrome.extension.getURL('../sounds/' + filename + '.mp3');
+                        }
+                        alarmNotif.play();
                     }
+
                     if (useNotification) {
                         var buttonOptions = '';
                         if(alertItems.length == 1)
                         {
-                            buttonOptions = [{iconUrl: 'img/snooze.png', title: 'Snooze'}, {iconUrl: 'img/dismiss.png', title: 'Dismiss'}];
+                            buttonOptions = [{iconUrl: '../img/snooze.png', title: 'Snooze'}, {iconUrl: '../img/dismiss.png', title: 'Dismiss'}];
                         }else{
-                            buttonOptions = [{iconUrl: 'img/list.png', title: 'Manage'}];
+                            buttonOptions = [{iconUrl: '../img/list.png', title: 'Manage'}];
                         }
                         var opts = {
                             type: "list",
                             title: "Don't Forget!",
                             message: "my message",
-                            iconUrl: "img/logo_alarm64.png",
+                            iconUrl: "../img/logo_alarm64.png",
                             items: alertItems,
                             buttons: buttonOptions
                         };
