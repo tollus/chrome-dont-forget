@@ -4,8 +4,8 @@
   "version": "0.3",
   "permissions": ["notifications", "storage", "alarms"],
   "background": {
-    "scripts": ["background/settings.js", "background/omnibox.js", "background/alarms.js"],
-    "persistent": false
+    "page": "background/background.html",
+    "persistent": true
   },
   "manifest_version": 2,
   "omnibox": {

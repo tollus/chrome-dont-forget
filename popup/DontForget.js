@@ -6,7 +6,12 @@ angular.module('DontForget', ['ui.bootstrap']);
 
 var DontForgetCtrl = function ($scope, $timeout, $filter)
 {
+    // used for friendlyDTFormat
+    var _settings = {};
+
     $scope.alerts = [];
+
+    // used for mgmtInit
     $scope.settings = {};
 
     var settings_lookup = {
@@ -132,7 +137,7 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
             action: 'getSettings'
         }, function(settings) {
             // store settings locally
-            $scope.settings = $.extend({}, settings.settings);
+            _settings = $.extend({}, settings.settings);
 
             chrome.runtime.sendMessage({
                 action: 'getAlarms'
@@ -173,8 +178,8 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
     function friendlyDTFormat(adjustedDT){
         var now = new Date();
         var dateString = '';
-        var tf = $scope.settings.timeFormat || 'h:mm a';
-        var df = $scope.settings.dateFormat || 'MMM d, y';
+        var tf = _settings.timeFormat || 'h:mm a';
+        var df = _settings.dateFormat || 'MMM d, y';
 
         if (adjustedDT.getDate() == now.getDate()) {
             dateString = "'Today at' " + tf;
@@ -325,6 +330,13 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
         $scope.ddReminderSound = getLookupSettings('notifAlarm');
         $scope.onSoundClicked = function(value){
             $scope.settings.notifAlarm = value;
+
+            var filename = lookupSettings('notifAlarm', 'value', 'display', value) || '';
+            if (filename != '') {
+                var audio = new Audio();
+                audio.src = chrome.extension.getURL('../Sounds/' + filename + '.mp3');
+                audio.play();
+            }
         };
 
         $timeout(function(){
