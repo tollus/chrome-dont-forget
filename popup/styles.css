@@ -6,6 +6,7 @@ body{
     width: 350px;
     margin: 10px 0px 10px 0px;
     height: 350px;
+    max-height: 580px;
     background-color: #FFFFFF;
 }
 
@@ -14,7 +15,7 @@ body{
 }
 
 .alert{
-    padding: 8px 25px 8px 0px;
+    padding: 8px 8px 8px 0px;
     margin-bottom: 5px;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
     background-color: #fcf8e3;
@@ -24,7 +25,7 @@ body{
     border-radius: 4px;
 }
 .alert-error{
-    padding: 8px 25px 8px 0px;
+    padding: 8px 8px 8px 0px;
     margin-bottom: 5px;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
     background-color: #f2dede;

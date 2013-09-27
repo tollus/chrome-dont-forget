@@ -54,12 +54,15 @@
             <input class="btn-danger" type="submit" value="Cancel" ng-click="CloseWindow()">
         </div>
         <div class="center" style="margin: 5px 0px 0px 0px">
-            <alert ng-repeat="alert in alerts | filter:isNotExpired | limitTo:5 " type="alert.type" close="closeAlert($index)"><span class="{{alert.repeat}}">&nbsp;</span>{{alert.msg}}</alert>
+            <div ng-repeat="alert in alerts | limitTo:7 " ng-class="getAlertClass(alert.date)" type="alert.type" close="closeAlert($index)">
+                <span class="{{alert.repeat}}">&nbsp;</span>{{alert.msg}}
+                <span ng-click="closeAlert($index)" class="pull-right"><a href=""><i class="icon-remove"></i></a></span>
+            </div>
         </div>
     </div>
     <div style="clear:both"></div>
     <div class="center">
-        <a href="" ng-click="createTab()" target="_new">Manage Reminders</a>
+        <a href="" ng-click="createTab()" target="_new">Manage Reminders</a> <i class="icon"></i>
     </div>
 </div>
 </body>

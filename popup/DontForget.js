@@ -237,9 +237,15 @@ var DontForgetCtrl = function ($scope, $timeout, $filter)
     };
 
     $scope.createTab = function (){
-        // TODO: check for tab already open
-        var url = chrome.extension.getURL('../other/alarmmgmt.html#mgmt');
-        chrome.tabs.create({url: url, active: true});
+        var url = chrome.extension.getURL('../other/alarmmgmt.html');
+
+        chrome.tabs.query({url: url}, function(tabs) {
+            if (tabs.length) {
+                chrome.tabs.update(tabs[0].id, {active: true});
+            } else {
+                chrome.tabs.create({url: url + "#/mgmt", active: true});
+            }
+        });
     };
 
     $scope.SaveSettings = function() {

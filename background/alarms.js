@@ -450,9 +450,7 @@
                     }
 
                     if (usePopup) {
-                        // TODO: check for tab already open
-                        var url = chrome.extension.getURL('../other/alarmmgmt.html#mgmt');
-                        chrome.tabs.create({url: url, active: true});
+                        manageTab();
                     }
                     refreshPopup();
                 }
@@ -473,8 +471,7 @@
                         }
                     });
                 }else{
-                    var url = chrome.extension.getURL('../other/alarmmgmt.html#mgmt');
-                    chrome.tabs.create({url: url, active: true});
+                    manageTab();
                 }
             });
         } else {
@@ -492,6 +489,18 @@
 
         chrome.notifications.clear("alerts", function() {});
     }
+
+    function manageTab (){
+        var url = chrome.extension.getURL('../other/alarmmgmt.html');
+
+        chrome.tabs.query({url: url}, function(tabs) {
+            if (tabs.length) {
+                chrome.tabs.update(tabs[0].id, {active: true});
+            } else {
+                chrome.tabs.create({url: url + "#/mgmt", active: true});
+            }
+        });
+    };
 
     // returns the current date as number (local timezone stored as UTC with 0 seconds)
     function getCurrentDate() {
