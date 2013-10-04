@@ -55,7 +55,7 @@
         </div>
         <div class="center" style="margin: 5px 0px 0px 0px">
             <div ng-repeat="alert in alerts | limitTo:7 " ng-class="getAlertClass(alert.date)" type="alert.type" close="closeAlert($index)">
-                <span class="{{alert.repeat}}">&nbsp;</span>{{alert.msg}}
+                <span class="{{alert.repeat}}">&nbsp;</span><span>{{alert.msg}}</span>
                 <span ng-click="closeAlert($index)" class="pull-right"><a href=""><i class="icon-remove"></i></a></span>
             </div>
         </div>

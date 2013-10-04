@@ -260,11 +260,8 @@
                 console.log('initialized settings: ', settings);
                 AppSettings.set(settings, function() {
                     // force a notify in case alarms already expired
-                    notify();
+                    //notify();
                 });
-            } else {
-                // force a notify in case alarms already expired
-                notify();
             }
         });
     }
