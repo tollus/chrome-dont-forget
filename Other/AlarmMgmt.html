@@ -16,7 +16,7 @@
 <body>
     <div id="mainContainer" class="" style="margin: 20px;" ng-controller="DontForgetCtrl" ng-init="mgmtInit()">
         <tabset>
-            <tab heading="Reminder Mgmt" select="loadAlerts()" active="activeTab.mgmt">
+            <tab heading="Reminder Mgmt" select="loadAlerts()" active="activeTab.mgmt" class="cursorPointer">
                 <div class="contentWrapper center" style="margin: 5px 0px 0px 0px; height: 500px">
                     <div ng-repeat="alert in alerts" ng-class="getAlertClass(alert.date)" type="alert.type" close="closeAlert($index)">
                         <span class="{{alert.repeat}}">&nbsp;</span>{{alert.msg}}
@@ -28,7 +28,7 @@
                     <div ng-hide="alerts.length">There are no reminders set to manage</div>
                 </div>
             </tab>
-            <tab heading="Settings" select="loadSettings()" active="activeTab.settings">
+            <tab heading="Settings" select="loadSettings()" active="activeTab.settings" class="cursorPointer">
                 <form class="form-horizontal" style="padding-bottom: 50px">
                     <div class="control-group">
                         <label class="control-label" for="settings.snoozeTime">Snooze Time</label>

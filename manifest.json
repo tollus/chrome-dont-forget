@@ -2,7 +2,7 @@
   "name": "Don't Forget",
   "author": "dcarps",
   "description": "Don't Forget lets you add reminders to chrome which get synced across all sync enabled chrome instances",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "permissions": ["notifications", "storage", "alarms"],
   "background": {
     "page": "background/background.html",
